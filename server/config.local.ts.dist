@@ -1,0 +1,9 @@
+export const env = 'dev';
+export const domain = '';
+export const secret = '';
+export const apiUrl = '';
+export const accessToken = '';
+export const systemId = '';
+export const lajiAuthUrl = '';
+export const allowedRoles = [];
+export const allowedLogin = [];

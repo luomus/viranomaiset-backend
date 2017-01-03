@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="fi">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="format-detection" content="telephone=no"/>
+
+  <link rel="icon" href="https://beta.laji.fi/static/images/icons/favicon.ico" type="image/x-icon" />
+  <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+
+  <title>Suomen Lajitietokeskus</title>
+
+  <base href="/">
+
+  <!-- Bootstrap -->
+  <!-- Latest compiled and minified CSS -->
+  <link rel="stylesheet" href="https://cdn.laji.fi/nvd3/1.8.4/nv.d3.min.css" />
+  <link rel="stylesheet" href="https://cdn.laji.fi/bootstrap/3.3.7/css/bootstrap.min.css" type="text/css">
+  <link rel='stylesheet' href='https://fonts.googleapis.com/css?family=Roboto:400,300,500,700' type="text/css">
+
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    html, body, .container, .container > .row {
+      height: 100%;
+    }
+    body {
+      background-color: #2C3E50;
+    }
+    .container > .row {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    .login-container {
+      height: 200px;
+      width: 300px;
+      margin: 0 auto;
+      padding: 10px;
+      background-color: #ddd;
+      border-radius: 10px;
+    }
+    .auth-sources, .auth-sources li {
+      list-style: none;
+    }
+    .auth-sources li:not(:first-child) {
+      padding-top: 20px;
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+  <div class="row">
+    <div class="login-container">
+      <h3>Kirjaudu</h3>
+      <ul class="auth-sources">
+        {{#allowedLogin}}
+          <li>
+            <a href="{{lajiAuthUrl}}{{path}}?target={{systemId}}&allowUnapproved=false&next=%2Fuser%2Fvirannomaiset">
+              <img src="https://cdn.laji.fi/images/laji-auth/{{method}}.png" alt="{{method}}" />
+            </a>
+          </li>
+        {{/allowedLogin}}
+      </ul>
+    </div>
+  </div>
+</div>
+</body>
+</html>
