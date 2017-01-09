@@ -1,10 +1,9 @@
-import { Router, Response, Request } from 'express';
+import { Router, Response } from 'express';
 import { isAuthenticated, PassportRequest } from '../auth/laji-auth';
 import { apiUrl, accessToken } from '../config.local';
 import * as httpRequest from 'request';
 
 const apiRouter: Router = Router();
-
 
 apiRouter.all('*', isAuthenticated, (req: PassportRequest, res: Response) => {
   // convert public query to private
@@ -17,7 +16,7 @@ apiRouter.all('*', isAuthenticated, (req: PassportRequest, res: Response) => {
   }
 
   req.pipe(httpRequest(
-    apiUrl + req.url.replace('/query/', '/private-query/'),
+    apiUrl + url,
     {
       headers: {
         'accept': 'application/json',
