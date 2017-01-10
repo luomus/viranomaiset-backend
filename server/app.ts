@@ -11,7 +11,6 @@ import { apiRouter } from './routes/api';
 import { userRouter } from './routes/user';
 import { env, domain, secret } from './config.local';
 const mustacheExpress = require('mustache-express');
-const expiryDate = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
 const app: express.Application = express();
 
 app.disable('x-powered-by');
@@ -30,7 +29,7 @@ app.use(expressSession({
     httpOnly: true,
     domain: domain,
     path: '/',
-    expires: expiryDate
+    maxAge: 3600000
   }
 }));
 app.use(passport.initialize());
