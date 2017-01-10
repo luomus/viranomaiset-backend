@@ -18,6 +18,7 @@ apiRouter.all('*', isAuthenticated, (req: PassportRequest, res: Response) => {
   req.pipe(httpRequest(
     apiUrl + url,
     {
+      method: req.method,
       headers: {
         'accept': 'application/json',
         'authorization': accessToken
