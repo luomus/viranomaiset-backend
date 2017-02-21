@@ -13,6 +13,9 @@ passport.use('login', new Strategy(
   function(token, password, done) {
     const tokenUrl = lajiAuthUrl + 'token/' + token;
     httpRequest(tokenUrl, function(error, response, body) {
+      if (error) {
+        return done(null, false, { message: 'Incorrect credentials' });
+      }
       const result: any = JSON.parse(body) || {};
       const roles = result.user && result.user.roles || [];
       let hasRightRole = false;
@@ -29,7 +32,7 @@ passport.use('login', new Strategy(
         }
         hasRightMethod = result.source === allow.method;
       }
-      if (!error && response.statusCode == 200 && result.target === systemId && hasRightRole && hasRightMethod) {
+      if (response.statusCode == 200 && result.target === systemId && hasRightRole && hasRightMethod) {
         return done(null, token);
       }
       return done(null, false, { message: 'Incorrect credentials' });
