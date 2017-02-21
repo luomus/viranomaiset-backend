@@ -33,7 +33,8 @@ passport.use('login', new Strategy(
         hasRightMethod = result.source === allow.method;
       }
       if (response.statusCode == 200 && result.target === systemId && hasRightRole && hasRightMethod) {
-        return done(null, token);
+        result.user['token'] = token;
+        return done(null, result.user);
       }
       return done(null, false, { message: 'Incorrect credentials' });
     });

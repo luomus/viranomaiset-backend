@@ -13,7 +13,7 @@ userRouter.get('/virannomaiset', function(req, res) {
 });
 
 userRouter.get('/login/success', function(req, res) {
-  res.redirect('/user/login?token=' + req.user);
+  res.redirect('/user/login?token=' + req.user.token);
 });
 
 userRouter.post("/virannomaiset", passport.authenticate('login', {
