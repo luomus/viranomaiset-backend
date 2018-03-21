@@ -11,7 +11,9 @@ let logger: any;
 
 apiRouter.all('*', isAuthenticated, (req: any, res: Response) => {
   // convert public query to private
-  const url = req.url.replace('/query/', '/private-query/');
+  const url = req.url
+    .replace('/query/', '/private-query/')
+    .replace('_personToken_', req.user['token']);
 
   // logout also from the backend when logging out
   if (url.indexOf('/person-token/') === 0 && req.method === 'DELETE') {

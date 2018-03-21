@@ -25,7 +25,7 @@ app.use(expressSession({
   resave: false,
   saveUninitialized: false,
   cookie: {
-    secure: false, // this has to be done in the proxy
+    secure: env !== 'dev',
     httpOnly: true,
     domain: domain,
     path: '/',
