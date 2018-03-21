@@ -46,7 +46,7 @@ app.use('/user/', userRouter);
 
 // serve the frontend and redirect all rest of the paths to index.html
 app.use(express.static(path.join(__dirname, '/../client')));
-app.all('*', isAuthenticatedWithRedirect, function (req, res) {
+app.all('*', function (req, res) {
   res.status(200).sendFile(path.join(__dirname, '/../client/index.html'));
 });
 
