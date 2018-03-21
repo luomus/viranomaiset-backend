@@ -25,8 +25,9 @@ app.use(expressSession({
   resave: false,
   saveUninitialized: false,
   cookie: {
-    secure: env !== <string>'dev',
+    secure: false, // this is done by the proxy
     httpOnly: true,
+    sameSite: true,
     domain: domain,
     path: '/',
     maxAge: 3600000
