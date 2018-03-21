@@ -57,7 +57,6 @@ export const isAuthenticated = function (req: PassportRequest, res, next) {
 
 export const isAuthenticatedWithRedirect = function (req: PassportRequest, res, next) {
   if (req.url.startsWith('/user/login') || req.isAuthenticated()) {
-    console.log('YEEE');
     return next();
   }
   res.redirect('/user/viranomaiset');
