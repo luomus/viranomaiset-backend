@@ -3,7 +3,6 @@ import * as passport from 'passport';
 import { Strategy } from 'passport-local';
 import * as httpRequest from 'request';
 import { lajiAuthUrl, systemId, allowedRoles, allowedLogin } from '../config.local';
-import has = Reflect.has;
 
 passport.use('login', new Strategy(
   {
@@ -57,7 +56,8 @@ export const isAuthenticated = function (req: PassportRequest, res, next) {
 };
 
 export const isAuthenticatedWithRedirect = function (req: PassportRequest, res, next) {
-  if (req.isAuthenticated()) {
+  if (req.url.startsWith('/user/login') || req.isAuthenticated()) {
+    console.log('YEEE');
     return next();
   }
   res.redirect('/user/viranomaiset');

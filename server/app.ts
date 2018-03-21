@@ -44,9 +44,12 @@ app.set('views', __dirname + '/views');
 app.use('/api/', apiRouter);
 app.use('/user/', userRouter);
 
+app.get('/', isAuthenticatedWithRedirect, function (req, res) {
+  res.status(200).sendFile(path.join(__dirname, '/../client/index.html'));
+});
 // serve the frontend and redirect all rest of the paths to index.html
 app.use(express.static(path.join(__dirname, '/../client')));
-app.all('*', function (req, res) {
+app.all('*', isAuthenticatedWithRedirect, function (req, res) {
   res.status(200).sendFile(path.join(__dirname, '/../client/index.html'));
 });
 

@@ -5,7 +5,7 @@
   "main": "server/app.js",
   "license": "MIT",
   "scripts": {
-    "start": "tsc -p ./server  && concurrently \"tsc -w -p ./server\" \"npm run assets-watch\" \"nodemon dist/server/bin/www.js\"",
+    "start": "tsc -p ./server  && concurrently \"tsc -w -p ./server\" \"yarn run assets-watch\" \"nodemon dist/server/bin/www.js\"",
     "test": "ng test --watch=false",
     "pree2e": "webdriver-manager update",
     "e2e": "protractor",
