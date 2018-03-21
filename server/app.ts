@@ -1,7 +1,6 @@
 import * as express from 'express';
 import * as helmet from 'helmet';
 import * as path from 'path';
-import * as cors from 'cors';
 import * as compression from 'compression';
 import * as expressSession from 'express-session';
 import * as bodyParser from 'body-parser';
@@ -9,7 +8,8 @@ import * as cookieParser from 'cookie-parser';
 import * as passport from 'passport';
 import { apiRouter } from './routes/api';
 import { userRouter } from './routes/user';
-import { env, domain, secret } from './config.local';
+import { domain, secret } from './config.local';
+import { isAuthenticatedWithRedirect } from "./auth/laji-auth";
 const mustacheExpress = require('mustache-express');
 const app: express.Application = express();
 
@@ -46,7 +46,7 @@ app.use('/user/', userRouter);
 
 // serve the frontend and redirect all rest of the paths to index.html
 app.use(express.static(path.join(__dirname, '/../client')));
-app.all('*', function (req, res) {
+app.all('*', isAuthenticatedWithRedirect, function (req, res) {
   res.status(200).sendFile(path.join(__dirname, '/../client/index.html'));
 });
 

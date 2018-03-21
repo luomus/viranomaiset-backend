@@ -56,6 +56,13 @@ export const isAuthenticated = function (req: PassportRequest, res, next) {
   res.sendStatus(403);
 };
 
+export const isAuthenticatedWithRedirect = function (req: PassportRequest, res, next) {
+  if (req.isAuthenticated()) {
+    return next();
+  }
+  res.redirect('/user/viranomaiset');
+};
+
 export interface PassportRequest extends Request {
   logout: () => void;
   isAuthenticated: () => boolean;

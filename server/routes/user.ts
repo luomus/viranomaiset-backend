@@ -4,7 +4,7 @@ import * as passport from 'passport';
 
 const userRouter: Router = Router();
 
-userRouter.get('/virannomaiset', function(req, res) {
+userRouter.get('/viranomaiset', function(req, res) {
   res.render('user/login', {
     allowedLogin: allowedLogin,
     systemId: systemId,
@@ -16,9 +16,9 @@ userRouter.get('/login/success', function(req, res) {
   res.redirect('/user/login?token=_personToken_');
 });
 
-userRouter.post("/virannomaiset", passport.authenticate('login', {
+userRouter.post("/viranomaiset", passport.authenticate('login', {
   successRedirect: '/user/login/success',
-  failureRedirect: '/user/virannomaiset'
+  failureRedirect: '/user/viranomaiset'
 }));
 
 export { userRouter };
