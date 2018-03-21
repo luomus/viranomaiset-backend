@@ -25,7 +25,7 @@ app.use(expressSession({
   resave: false,
   saveUninitialized: false,
   cookie: {
-    secure: env !== 'dev',
+    secure: env !== <string>'dev',
     httpOnly: true,
     domain: domain,
     path: '/',
