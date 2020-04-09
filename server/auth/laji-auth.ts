@@ -1,10 +1,13 @@
-import { Request } from "express";
 import * as passport from 'passport';
 import { Strategy } from 'passport-local';
 import * as httpRequest from 'request';
 import { lajiAuthUrl, systemId, allowedRoles, allowedLogin } from '../config.local';
+import * as random from 'crypto-random-string';
 
-passport.use('login', new Strategy(
+// TODO this needs to be moved away from here if serving more than one instance of this backend
+const authorized_users = {};
+
+passport.use('local', new Strategy(
   {
     usernameField: 'token',
     passwordField: 'token',
@@ -33,6 +36,7 @@ passport.use('login', new Strategy(
       }
       if (response.statusCode == 200 && result.target === systemId && hasRightRole && hasRightMethod) {
         result.user['token'] = token;
+        result.user['publicToken'] = random({length: 64});
         return done(null, result.user);
       }
       return done(null, false, { message: 'Incorrect credentials' });
@@ -40,30 +44,11 @@ passport.use('login', new Strategy(
   }
 ));
 
-passport.serializeUser(function(user: Object, done) {
-  done(null, user);
+passport.serializeUser(function(user: any, done) {
+  authorized_users[user.token] = user;
+  done(null, user.token);
 });
 
-passport.deserializeUser(function(token, done) {
-  done(null, token);
+passport.deserializeUser(function(token: string, done) {
+  done(null, authorized_users[token]);
 });
-
-export const isAuthenticated = function (req: PassportRequest, res, next) {
-  if (req.isAuthenticated()) {
-    return next();
-  }
-  res.sendStatus(403);
-};
-
-export const isAuthenticatedWithRedirect = function (req: PassportRequest, res, next) {
-  if (req.url.startsWith('/user/login') || req.isAuthenticated()) {
-    return next();
-  }
-  res.redirect('/user/viranomaiset');
-};
-
-export interface PassportRequest extends Request {
-  logout: () => void;
-  isAuthenticated: () => boolean;
-  session: any;
-}

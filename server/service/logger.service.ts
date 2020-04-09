@@ -1,0 +1,29 @@
+import * as winston from 'winston';
+import { logPath } from '../config.local';
+
+let currentDate;
+let logger;
+
+export class LoggerService {
+
+  private static getLogger(): winston.Logger {
+    const now = new Date();
+    const today = now.toISOString().substring(0, 10) + '.log';
+    if (currentDate !== today) {
+      currentDate = today;
+      logger = winston.loggers.add('file', {
+        transports: [
+          new (winston.transports.File)({ filename: logPath + currentDate})
+        ]
+      });
+    }
+    return logger;
+  }
+
+  static info(data: any) {
+    LoggerService.getLogger().info({
+      data,
+      timestamp: new Date().toISOString(),
+    });
+  }
+}
