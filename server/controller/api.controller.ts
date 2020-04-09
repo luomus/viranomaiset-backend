@@ -1,4 +1,4 @@
-import { Request, Response } from "express";
+import { Request, Response } from 'express';
 import * as httpRequest from 'request';
 import { accessToken, apiUrl } from '../config.local';
 import { LoggerService } from '../service/logger.service';
@@ -8,18 +8,12 @@ export class ApiController {
 
   public pipe(req: Request, res: Response): any {
 
+    const user = req.user && (req.user as any).qname || '[unknown]';
+
     // convert public query to private
     const url = req.url
       .replace('/query/', '/private-query/')
       .replace(req.user['publicToken'], req.user['token']);
-
-    // logout also from the backend when logging out
-    if (url.indexOf('/person-token/') === 0 && req.method === 'DELETE') {
-      req.logout();
-      req.session.destroy((err) => {
-
-      });
-    }
 
     // change the body to have real token if it's there
     let body = req.body;
@@ -32,24 +26,50 @@ export class ApiController {
       }
     }
 
-    LoggerService.info({
-      user: req.user && (req.user as any).qname || '[unknown]',
-      query: url,
-      remote: req.connection.remoteAddress || '',
-      body: body
-    });
+    function doRemoteRequest(user: string, url: string, body, req: Request, res: Response<any>) {
+      const start = Date.now();
+      const apiTarget = new URL(apiUrl + url);
+      httpRequest[req.method.toLowerCase()](
+        apiTarget.toString(),
+        {
+          headers: {
+            ...req.headers,
+            'Host': apiTarget.hostname,
+            'content-length': typeof body === 'string' ? body.length : req.headers['content-length'],
+            'authorization': accessToken
+          },
+          ...(['GET', 'DELETE'].includes(req.method) ? {} : {body})
+        }
+      ).on('end', function () {
+        LoggerService.info({
+          user: user,
+          action: 'API_REQUEST_END',
+          request: {
+            method: req.method,
+            url,
+            body
+          },
+          response: {
+            statusCode: res.statusCode,
+          },
+          took: (Date.now() - start),
+          remote: req.connection.remoteAddress || '',
+        });
+      }).pipe(res);
+    }
 
-    httpRequest[req.method.toLowerCase()](
-      apiUrl + url,
-      {
-        headers: {
-          ...req.headers,
-          Host: 'apitest.laji.fi',
-          'authorization': accessToken
-        },
-        ...(req.method !== 'GET' ? { body } : {})
-      }
-    ).pipe(res);
+    // logout also from the backend when logging out
+    if (url.indexOf('/person-token/') === 0 && req.method === 'DELETE') {
+      req.logout();
+      req.session.destroy(() => {
+        doRemoteRequest(user, url, body, req, res);
+      });
+      LoggerService.info({
+        user: user,
+        action: 'LOGOUT'
+      });
+    } else {
+      doRemoteRequest(user, url, body, req, res);
+    }
   }
-
 }
