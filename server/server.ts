@@ -93,7 +93,7 @@ class Server {
     this.app.set('port', serverPort || process.env.PORT || 4000);
     this.app.set('view engine', 'mustache');
     this.app.set('views', __dirname + '/views');
-    this.app.use(express.static(path.join(__dirname, '/../client')));
+    this.app.use(express.static(path.join(__dirname, '/../client'), {index: false}));
 
     // minimalistic info on error
     this.app.use(function(err: any, req: express.Request, res: express.Response, next: express.NextFunction) {
