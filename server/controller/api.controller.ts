@@ -13,14 +13,19 @@ export class ApiController {
     // convert public query to private
     const url = req.url
       .replace('/query/', '/private-query/')
-      .replace(req.user['publicToken'], req.user['token']);
+      .replace(req.user['token'], '')
+      .replace(req.user['publicToken'], req.user['token']) +
+      (req.url.includes('?') ? '&' : '?') + 'personId=' + user;
 
     // change the body to have real token if it's there
     let body = req.body;
     if (typeof body === 'string') {
       try {
-        const re = new RegExp(req.user['publicToken'], 'g');
-        body = body.replace(re, req.user['token']);
+        const rePublic = new RegExp(req.user['publicToken'], 'g');
+        const rePrivate = new RegExp(req.user['token'], 'g');
+        body = body
+          .replace(rePrivate, '')
+          .replace(rePublic, req.user['token']);
       } catch (e) {
         body = '';
       }
