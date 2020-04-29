@@ -7,7 +7,7 @@ import * as bodyParser from 'body-parser';
 import * as cookieParser from 'cookie-parser';
 import * as passport from 'passport';
 import { ApiRoutes } from './route/api.routes';
-import { domain, secret } from './config.local';
+import { domain, secret, allowedResourceSources } from './config.local';
 import { serverPort } from './config';
 import { AuthController } from './controller/auth.controller';
 import { UserRoutes } from './route/user.routes';
@@ -35,18 +35,7 @@ class Server {
     this.app.use(helmet({
       contentSecurityPolicy: {
         directives: {
-          defaultSrc: [
-            "'self'",
-            'cdn.laji.fi',
-            'cms.laji.fi',
-            'image.laji.fi',
-            'proxy.laji.fi',
-            'maps.luomus.fi',
-            'paikkatieto.ymparisto.fi',
-            'wmts.mapant.fi',
-            'geo.stat.fi',
-            'data:'
-          ],
+          defaultSrc: allowedResourceSources,
           styleSrc: ["'self'", 'cdn.laji.fi', 'fonts.googleapis.com', "'unsafe-inline'"],
           fontSrc: ["'self'", 'cdn.laji.fi', 'fonts.gstatic.com', "'sha256-5cD+sF5UmRfpb/CalLmJdYzf23tFwPPfvsRDWZa59xM='", 'data:'],
           scriptSrc: [
