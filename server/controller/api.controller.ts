@@ -3,16 +3,40 @@ import * as httpRequest from 'request';
 import { accessToken, apiUrl, allowedQueryHashes } from '../config.local';
 import { LoggerService } from '../service/logger.service';
 import { sha1 } from 'object-hash';
+import { IColOrganization, OrganizationService } from '../service/organization.service';
+
+const LOG_DENIED = 'API_REQUEST_DENIED';
+const LOG_SUCCESS = 'API_REQUEST_SUCCESS';
+const LOG_INVALID_TOKEN = 'API_REQUEST_INVALID_TOKEN';
 
 export class ApiController {
 
+  constructor(
+      private organizationService: OrganizationService
+  ) {}
+
+  public getUsers(req: Request, res: Response): Response<IColOrganization[]> {
+    const user = ApiController.getUserId(req);
+    if (!ApiController.isValidQueryToken(req)) {
+      return res.status(403).send({error: 'No sufficient rights'})
+    }
+    LoggerService.info({
+      user,
+      action: LOG_SUCCESS,
+      request: {
+        method: req.method,
+        url: req.url,
+      },
+      remote: req.connection.remoteAddress || '',
+    });
+    return res.status(200).send(this.organizationService.getUsers());
+  }
+
   public pipe(req: Request, res: Response): any {
-
-    const user = req.user && (req.user as any).qname || '[unknown]';
-
+    const user = ApiController.getUserId(req);
     // convert public query to private
     const url = req.url
-      // .replace('/query/', '/private-query/')
+      .replace('/query/', '/private-query/')
       .replace(req.user['token'], '')
       .replace(req.user['publicToken'], req.user['token']) +
       (req.url.includes('?') ? '&' : '?') + 'personId=' + user;
@@ -20,10 +44,10 @@ export class ApiController {
     // change the body to have real token if it's there
     let body = req.body;
 
-    if (!ApiController.isAllowed(url, body)) {
+    if (!ApiController.isAllowedQuery(url, body)) {
       LoggerService.info({
-        user: user,
-        action: 'API_REQUEST_DENIED',
+        user,
+        action: LOG_DENIED,
         request: {
           method: req.method,
           url,
@@ -63,8 +87,8 @@ export class ApiController {
         }
       ).on('end', function () {
         LoggerService.info({
-          user: user,
-          action: 'API_REQUEST_END',
+          user,
+          action: LOG_SUCCESS,
           request: {
             method: req.method,
             url,
@@ -87,7 +111,7 @@ export class ApiController {
         doRemoteRequest(user, url, body, req, res);
       });
       LoggerService.info({
-        user: user,
+        user,
         action: 'LOGOUT'
       });
     } else {
@@ -95,7 +119,7 @@ export class ApiController {
     }
   }
 
-  private static isAllowed(url: string, body: string) {
+  private static isAllowedQuery(url: string, body: string) {
     if (typeof url !== 'string') {
       return false;
     }
@@ -111,9 +135,29 @@ export class ApiController {
         const data = JSON.parse(body);
         return sha1((data || {}).query);
       } catch (e) {
-        console.log(e);
       }
     }
     return '';
   }
+
+  private static isValidQueryToken(req: Request) {
+    if (req.query['token'] === req.user['publicToken'] && !!req.user) {
+      return true;
+    }
+    LoggerService.info({
+      user: ApiController.getUserId(req),
+      action: LOG_INVALID_TOKEN,
+      request: {
+        method: req.method,
+        url: req.url,
+      },
+      remote: req.connection.remoteAddress || '',
+    });
+    return false;
+  }
+
+  private static getUserId(req: Request, unknown: string = '[unknown]') {
+    return req.user && (req.user as any).qname || unknown;
+  }
+
 }
