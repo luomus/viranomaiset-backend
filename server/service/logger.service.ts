@@ -15,7 +15,7 @@ export class LoggerService {
         transports: [
           new (winston.transports.File)({ filename: logPath + currentDate})
         ]
-      });
+      } as winston.LoggerOptions);
     }
     return logger;
   }
