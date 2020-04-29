@@ -1,8 +1,8 @@
 import { Request, Response } from 'express';
 import * as httpRequest from 'request';
-import { accessToken, apiUrl } from '../config.local';
+import { accessToken, apiUrl, allowedQueryHashes } from '../config.local';
 import { LoggerService } from '../service/logger.service';
-
+import { sha1 } from 'object-hash';
 
 export class ApiController {
 
@@ -12,13 +12,29 @@ export class ApiController {
 
     // convert public query to private
     const url = req.url
-      .replace('/query/', '/private-query/')
+      // .replace('/query/', '/private-query/')
       .replace(req.user['token'], '')
       .replace(req.user['publicToken'], req.user['token']) +
       (req.url.includes('?') ? '&' : '?') + 'personId=' + user;
 
     // change the body to have real token if it's there
     let body = req.body;
+
+    if (!ApiController.isAllowed(url, body)) {
+      LoggerService.info({
+        user: user,
+        action: 'API_REQUEST_DENIED',
+        request: {
+          method: req.method,
+          url,
+          body
+        },
+        hash: ApiController.getQueryHash(body),
+        remote: req.connection.remoteAddress || '',
+      });
+      return res.status(403).send({error: 'query not allowed'});
+    }
+
     if (typeof body === 'string') {
       try {
         const rePublic = new RegExp(req.user['publicToken'], 'g');
@@ -57,6 +73,7 @@ export class ApiController {
           response: {
             statusCode: res.statusCode,
           },
+          hash: ApiController.getQueryHash(body),
           took: (Date.now() - start),
           remote: req.connection.remoteAddress || '',
         });
@@ -76,5 +93,27 @@ export class ApiController {
     } else {
       doRemoteRequest(user, url, body, req, res);
     }
+  }
+
+  private static isAllowed(url: string, body: string) {
+    if (typeof url !== 'string') {
+      return false;
+    }
+    if (!url.includes('/graphql')) {
+      return true;
+    }
+    return allowedQueryHashes.indexOf(ApiController.getQueryHash(body)) !== -1;
+  }
+
+  private static getQueryHash(body: string) {
+    if (typeof body === 'string') {
+      try {
+        const data = JSON.parse(body);
+        return sha1((data || {}).query);
+      } catch (e) {
+        console.log(e);
+      }
+    }
+    return '';
   }
 }
