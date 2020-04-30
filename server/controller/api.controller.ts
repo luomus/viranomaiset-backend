@@ -4,6 +4,7 @@ import { accessToken, apiUrl, allowedQueryHashes } from '../config.local';
 import { LoggerService } from '../service/logger.service';
 import { sha1 } from 'object-hash';
 import { IColOrganization, OrganizationService } from '../service/organization.service';
+import { DownloadRequestService, IDownloadRequest } from '../service/download-request.service';
 
 const LOG_DENIED = 'API_REQUEST_DENIED';
 const LOG_SUCCESS = 'API_REQUEST_SUCCESS';
@@ -12,8 +13,32 @@ const LOG_INVALID_TOKEN = 'API_REQUEST_INVALID_TOKEN';
 export class ApiController {
 
   constructor(
-      private organizationService: OrganizationService
+      private organizationService: OrganizationService,
+      private downloadRequestService: DownloadRequestService
   ) {}
+
+  public async searchDownloadRequests(req: Request, res: Response): Promise<Response<IDownloadRequest[]>> {
+    const user = ApiController.getUserId(req);
+    if (!ApiController.isValidQueryToken(req)) {
+       return res.status(403).send({error: 'No sufficient rights'})
+    }
+    return this.downloadRequestService.searchDownloads(req.query as any)
+      .then(data => {
+        LoggerService.info({
+          user,
+          action: LOG_SUCCESS,
+          request: {
+            method: req.method,
+            url: req.url,
+          },
+          response: {
+            statusCode: 200,
+          },
+          remote: req.connection.remoteAddress || '',
+        });
+        return res.status(200).send(data);
+      });
+  }
 
   public getUsers(req: Request, res: Response): Response<IColOrganization[]> {
     const user = ApiController.getUserId(req);
@@ -141,7 +166,7 @@ export class ApiController {
   }
 
   private static isValidQueryToken(req: Request) {
-    if (req.query['token'] === req.user['publicToken'] && !!req.user) {
+    if (!!req.user && req.query['token'] === req.user['publicToken']) {
       return true;
     }
     LoggerService.info({
