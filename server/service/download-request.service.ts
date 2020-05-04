@@ -33,7 +33,7 @@ export class DownloadRequestService {
     let keyCnt = 0;
     const filter = Object.keys(query).reduce((result, key) => {
       if (['collectionId', 'person'].includes(key)) {
-        key++;
+        keyCnt++;
         return key;
       }
       return result;
