@@ -94,6 +94,8 @@ export class ApiController {
       } catch (e) {
         body = '';
       }
+    } else if (typeof body === 'object' && Object.keys(body).length === 0) {
+      body = '';
     }
 
     function doRemoteRequest(user: string, url: string, body, req: Request, res: Response<any>) {

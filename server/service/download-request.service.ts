@@ -7,6 +7,8 @@ export interface IDownloadRequest {
   downloadType: string;
   source: string;
   collectionId: string;
+  person: string;
+  dataUsePurpose: string;
 }
 
 export interface IDownloadRequestSearch {
@@ -24,20 +26,24 @@ export class DownloadRequestService {
     private triplestoreService: TriplestoreService
   ) {
     this.refreshSearchList();
-    setInterval(() => {
-      this.refreshSearchList();
-    }, REFRESH_LIST);
+    setInterval(() => { this.refreshSearchList(); }, REFRESH_LIST);
   }
 
   async searchDownloads(query: IDownloadRequestSearch): Promise<IDownloadRequest[]> {
-    const queryKeysLength = Object.keys(query).length;
-    if (queryKeysLength === 0) {
+    let keyCnt = 0;
+    const filter = Object.keys(query).reduce((result, key) => {
+      if (['collectionId', 'person'].includes(key)) {
+        key++;
+        return key;
+      }
+      return result;
+    }, '');
+    if (keyCnt === 0) {
       return this.allRequests;
-    } else if (queryKeysLength === 1) {
-      const key = Object.keys(query)[0];
+    } else if (keyCnt === 1) {
       return this.search({
-        predicate: 'HBF.' + key,
-        objectliteral: query[key]
+        predicate: 'HBF.' + filter,
+        objectliteral: query[filter]
       })
     }
     return [];
@@ -54,7 +60,6 @@ export class DownloadRequestService {
   }
 
   private search(query: Omit<ITriplestoreSearchQuery, 'type'>): Promise<IDownloadRequest[]> {
-    console.log('S', query);
     return this.triplestoreService.search<IDownloadRequest>({
       ...query,
       type: 'HBF.downloadRequest'
@@ -70,10 +75,12 @@ export class DownloadRequestService {
     // console.log(raw);
     return {
       id: raw.id,
+      person: raw.person,
+      source: raw.source,
       requested: raw.requested,
       downloadType: raw.downloadType,
-      source: raw.source,
-      collectionId: raw.collectionId
+      collectionId: raw.collectionId,
+      dataUsePurpose: raw.dataUsePurpose
     };
   }
 

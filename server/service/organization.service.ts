@@ -38,7 +38,7 @@ export class OrganizationService {
   ) {
     setTimeout(() => {
       setInterval(() => this.refreshOrganizations(), REFRESH_INTERVAL);
-      // this.refreshOrganizations();
+      this.refreshOrganizations();
     }, 3000)
   }
 
