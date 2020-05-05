@@ -5,6 +5,7 @@ import { LoggerService } from '../service/logger.service';
 import { sha1 } from 'object-hash';
 import { IColOrganization, OrganizationService } from '../service/organization.service';
 import { DownloadRequestService, IDownloadRequest } from '../service/download-request.service';
+import { URL } from 'url';
 
 const LOG_DENIED = 'API_REQUEST_DENIED';
 const LOG_SUCCESS = 'API_REQUEST_SUCCESS';
