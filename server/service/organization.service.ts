@@ -5,6 +5,7 @@ interface IPerson {
   id: string;
   fullName: string;
   emailAddress: string;
+  organisation: string[]
 }
 
 export interface IColOrganization {
@@ -31,7 +32,7 @@ const UNDEFINED_COLLECTION = {
 
 export class OrganizationService {
 
-  private organizations = [];
+  private users = [];
 
   constructor(
     private triplestoreService: TriplestoreService
@@ -43,7 +44,7 @@ export class OrganizationService {
   }
 
   public getUsers(): IColOrganization[] {
-    return this.organizations;
+    return this.users;
   }
 
   private refreshOrganizations() {
@@ -53,15 +54,16 @@ export class OrganizationService {
       objectresource: allowedRoles.join(',')
     })
       .then(persons => {
+        const organizations = new Set<string>();
+        persons.forEach(p => Array.isArray(p.organisation) ? p.organisation.forEach(o => organizations.add(o)) : organizations.add(p.organisation))
         return this.triplestoreService.search<any>({
-          type: 'MY.collection',
-          subject: rootCollections.join(',')
+          type: 'MOS.organization',
+          subject: Array.from(organizations.values()).join(',')
         })
-          .then(roots => this.findSubOrganizations(roots))
-          .then(cols => this.addPersonInfoToCollections(this.personsToLookUp(persons), cols))
+          .then(organizations => this.preparePerson(persons, this.organizationsToLookUp(organizations)))
       })
-      .then(result => this.organizations = result)
-      .catch(e => console.log('Organization refresh failed', e));
+      .then(result => this.users = result)
+      .catch(e => console.log('User list refresh failed', e));
   }
 
   private addPersonInfoToCollections(persons: {[colID: string]: IPerson}, collections: any[], level = 0): IColOrganization[] {
@@ -99,16 +101,40 @@ export class OrganizationService {
     return result;
   }
 
-  private personsToLookUp(persons: any[]): {[id: string]: IPerson} {
+  private organizationsToLookUp(organizations: any[]): {[id: string]: string} {
     const result = {};
-    persons.forEach(person => {
-      result[person.id] = {
-        id: person.id,
-        fullName: person.fullName || (`person.firstName`),
-        emailAddress: person.emailAddress
-      }
+    const toName = (organization): string => {
+      const result = [];
+      ['organizationLevel1', 'organizationLevel2', 'organizationLevel3', 'organizationLevel4'].forEach(key => {
+        if (organization?.[key]?.en) {
+          result.push(organization[key].en);
+        }
+      });
+      return result.join(', ')
+    };
+    organizations.forEach(organization => {
+      result[organization.id] = toName(organization);
     })
     return result;
+  }
+
+  private preparePerson(persons: any[], organizations: { [id: string]: string }) {
+    return persons.map(p => ({
+      id: p.id,
+      fullName: p.fullName || (`${p.givenNames} ${p.inheritedName}`),
+      emailAddress: p.emailAddress,
+      organisation: this.prepareOrganization(p, organizations)
+    }));
+  }
+
+  private prepareOrganization(person: any, organizations: { [id: string]: string }): string[] {
+    if (person.organisation) {
+      if (Array.isArray(person.organisation)) {
+        return person.organisation.map(o => organizations[o] || 'unknown')
+      }
+      return [(organizations[person.organisation] || 'unknown')];
+    }
+    return ['unknown'];
   }
 
   private async findSubOrganizations(roots: any, fetched = {}): Promise<IColOrganization[]> {
