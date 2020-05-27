@@ -60,7 +60,11 @@ export class OrganizationService {
           type: 'MOS.organization',
           subject: Array.from(organizations.values()).join(',')
         })
-          .then(organizations => this.preparePerson(persons, this.organizationsToLookUp(organizations)))
+          .then(organizations => this.preparePerson(
+            persons,
+            this.organizationsToLookUp(organizations),
+            this.sectionsToLookUp(organizations),
+          ))
       })
       .then(result => this.users = result)
       .catch(e => console.log('User list refresh failed', e));
@@ -103,14 +107,22 @@ export class OrganizationService {
 
   private organizationsToLookUp(organizations: any[]): {[id: string]: string} {
     const result = {};
+    organizations.forEach(organization => {
+      result[organization.id] = organization?.['organizationLevel1']?.en;
+    })
+    return result;
+  }
+
+  private sectionsToLookUp(organizations: any[]): {[id: string]: string} {
+    const result = {};
     const toName = (organization): string => {
-      const result = [];
-      ['organizationLevel1', 'organizationLevel2', 'organizationLevel3', 'organizationLevel4'].forEach(key => {
+      let result: string;
+      ['organizationLevel2', 'organizationLevel3', 'organizationLevel4'].forEach(key => {
         if (organization?.[key]?.en) {
-          result.push(organization[key].en);
+          result = organization[key].en;
         }
       });
-      return result.join(', ')
+      return result;
     };
     organizations.forEach(organization => {
       result[organization.id] = toName(organization);
@@ -118,21 +130,25 @@ export class OrganizationService {
     return result;
   }
 
-  private preparePerson(persons: any[], organizations: { [id: string]: string }) {
-    return persons.map(p => ({
-      id: p.id,
-      fullName: p.fullName || (`${p.givenNames} ${p.inheritedName}`),
-      emailAddress: p.emailAddress,
-      organisation: this.prepareOrganization(p, organizations)
-    }));
+  private preparePerson(persons: any[], organizations: { [id: string]: string }, section: { [id: string]: string }) {
+    return persons.map(p => {
+      const userOrganizations = p?.organisation;
+      return ({
+        id: p.id,
+        fullName: p.fullName || (`${p?.givenNames} ${p?.inheritedName}`),
+        emailAddress: p.emailAddress,
+        organisation: this.toName(userOrganizations, organizations),
+        section: this.toName(userOrganizations, section),
+      });
+    });
   }
 
-  private prepareOrganization(person: any, organizations: { [id: string]: string }): string[] {
-    if (person.organisation) {
-      if (Array.isArray(person.organisation)) {
-        return person.organisation.map(o => organizations[o] || 'unknown')
+  private toName(organisations: any, organizations: { [id: string]: string }): string[] {
+    if (organisations) {
+      if (Array.isArray(organisations)) {
+        return organisations.map(o => organizations[o] || 'unknown')
       }
-      return [(organizations[person.organisation] || 'unknown')];
+      return [(organizations[organisations] || 'unknown')];
     }
     return ['unknown'];
   }
