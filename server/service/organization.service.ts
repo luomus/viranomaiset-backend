@@ -51,7 +51,7 @@ export class OrganizationService {
     this.triplestoreService.search<any>({
       type: 'MA.person',
       predicate: 'MA.role',
-      objectresource: allowedRoles.join(',')
+      objectresource: allowedRoles.filter(r => r !== 'MA.admin').join(',')
     })
       .then(persons => {
         const organizations = new Set<string>();
