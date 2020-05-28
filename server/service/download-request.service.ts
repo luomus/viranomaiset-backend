@@ -1,12 +1,15 @@
 import { ITriplestoreSearchQuery, TriplestoreService } from './triplestore.service';
-import { systemId } from '../config.local';
+import { rootCollections, systemId } from '../config.local';
+import { GraphQLService } from './graphql.service';
+import { gql } from 'apollo-boost';
 
 export interface IDownloadRequest {
   id: string;
   requested: string;
   downloadType: string;
   source: string;
-  collectionId: string;
+  collectionId: string[];
+  rootCollections: string[];
   person: string;
   dataUsePurpose: string;
 }
@@ -23,10 +26,11 @@ export class DownloadRequestService {
   private allRequests: IDownloadRequest[];
 
   constructor(
-    private triplestoreService: TriplestoreService
+    private triplestoreService: TriplestoreService,
+    private graphQLService: GraphQLService
   ) {
-    this.refreshSearchList();
-    setInterval(() => { this.refreshSearchList(); }, REFRESH_LIST);
+    this.refreshSearchList().then();
+    setInterval(() => { this.refreshSearchList().then(); }, REFRESH_LIST);
   }
 
   async searchDownloads(query: IDownloadRequestSearch): Promise<IDownloadRequest[]> {
@@ -49,28 +53,80 @@ export class DownloadRequestService {
     return [];
   }
 
-  private refreshSearchList() {
-    this.search({
+  private async refreshSearchList() {
+    return this.search({
       predicate: 'HBF.source',
       objectliteral: systemId
     })
-      .then(data => (data || []).map(d => this.rawToDownloadRequest(d)))
       .then(data => this.allRequests = data)
       .catch(e => console.log('Failed to featch all download requests', e))
   }
 
-  private search(query: Omit<ITriplestoreSearchQuery, 'type'>): Promise<IDownloadRequest[]> {
+  private collectionsIn(id: string) {
+    return this.graphQLService.query({
+      query: gql`
+          query($id: ID) {
+              children: collection(id: $id) {
+                  id
+                  children {
+                      id
+                      children {
+                          id
+                          children {
+                              id
+                          }
+                      }
+                  }
+              }
+          }
+      `,
+      variables: {
+        id
+      }
+    })
+    .then(data => this.pickCollections(data.data))
+    .then(data => data.reduce((r, d) => {
+      r[d] = id;
+      return r;
+    }, {}));
+  }
+
+  private pickCollections(data, cols = []) {
+    if (!data) {
+      return cols;
+    }
+    if (data.id) {
+      cols.push(data.id);
+    }
+    if (data.children) {
+      data.children.forEach(c => this.pickCollections(c, cols));
+    }
+    return cols;
+  }
+
+  private async search(query: Omit<ITriplestoreSearchQuery, 'type'>): Promise<IDownloadRequest[]> {
+    const colRootMap = await Promise.all(
+      rootCollections.map(c => this.collectionsIn(c))
+    ).then(cols => cols.reduce((a, c) => ({...a,...c}), {}));
+
     return this.triplestoreService.search<IDownloadRequest>({
       ...query,
       type: 'HBF.downloadRequest'
     })
-      .then(data => (data || []).map(d => this.rawToDownloadRequest(d)))
+      .then(data => (data || []).map(d => this.rawToDownloadRequest(d, colRootMap)))
       .then(data => data.filter(d => d.source === systemId));
   }
 
-  private rawToDownloadRequest(raw: any): IDownloadRequest {
+  private rawToDownloadRequest(raw: any, colRootMap: {[id: string]: string}): IDownloadRequest {
     if (typeof raw !== 'object') {
       return undefined;
+    }
+    const roots = new Set<string>();
+    if (raw.collectionId) {
+      if (!Array.isArray(raw.collectionId)) {
+        raw.collectionId = [raw.collectionId];
+      }
+      raw.collectionId.forEach(c => roots.add(colRootMap[(c.replace('http://tun.fi/', ''))]));
     }
     // console.log(raw);
     return {
@@ -80,6 +136,7 @@ export class DownloadRequestService {
       requested: raw.requested,
       downloadType: raw.downloadType,
       collectionId: raw.collectionId,
+      rootCollections: Array.from(roots.values()) as string[],
       dataUsePurpose: raw.dataUsePurpose
     };
   }
