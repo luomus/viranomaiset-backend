@@ -27,18 +27,26 @@
     body {
       background-color: #2C3E50;
     }
+    .error {
+      border: solid 2px #d62022;
+      padding: 5px;
+      border-radius: 5px;
+      background-color: #fee;
+    }
     .container > .row {
       display: flex;
       justify-content: center;
       align-items: center;
     }
     .login-container {
-      height: 200px;
       width: 300px;
       margin: 0 auto;
-      padding: 10px;
-      background-color: #ddd;
+      padding: 15px;
+      background-color: #fefefe;
       border-radius: 10px;
+    }
+    .login-container h3 {
+      margin-top: 5px;
     }
     .auth-sources, .auth-sources li {
       list-style: none;
@@ -52,16 +60,25 @@
 <div class="container">
   <div class="row">
     <div class="login-container">
-      <h3>Valitse kirjautumistapa</h3>
-      <ul class="auth-sources">
-        {{#allowedLogin}}
-          <li>
-            <a href="{{lajiAuthUrl}}{{path}}?target={{systemId}}&allowUnapproved=false&next=">
-              <img src="https://cdn.laji.fi/images/laji-auth/{{method}}.png" alt="{{method}}" />
-            </a>
-          </li>
-        {{/allowedLogin}}
-      </ul>
+      {{^hasError}}
+        <h3>Valitse kirjautumistapa</h3>
+        <ul class="auth-sources">
+          {{#allowedLogin}}
+            <li>
+              <a href="{{lajiAuthUrl}}{{path}}?target={{systemId}}&allowUnapproved=false&next=">
+                <img src="https://cdn.laji.fi/images/laji-auth/{{method}}.png" alt="{{method}}" />
+              </a>
+            </li>
+          {{/allowedLogin}}
+        </ul>
+      {{/hasError}}
+      {{#hasError}}
+        <div class="error">
+          <h4>Käyttäjätunnuksellasi ei ole vielä oikeutta käyttää tätä järjestelmää.</h4>
+          Ole hyvä, ja ota yhteyttä osoitteeseen viranomaiset@laji.fi, ja pyydä pääsyä Viranomaisportaaliin. Lähetä pyyntö käyttäen sitä sähköpostiosoitetta, jolla olet luonut tunnuksesi.<br><br>
+          <a href="/user/viranomaiset">Takaisin</a>
+        </div>
+      {{/hasError}}
     </div>
   </div>
 </div>

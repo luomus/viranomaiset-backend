@@ -12,7 +12,8 @@ export class UserController {
     res.render('user/login', {
       allowedLogin: allowedLogin,
       systemId: systemId,
-      lajiAuthUrl: lajiAuthUrl
+      lajiAuthUrl: lajiAuthUrl,
+      hasError: typeof req.query.error !== 'undefined'
     });
   }
 
@@ -22,7 +23,7 @@ export class UserController {
         return next(err);
       }
       if (!user) {
-        return res.redirect('/user/viranomaiset');
+        return res.redirect('/user/viranomaiset?error');
       }
       req.logIn(user, function (err) {
         if (err) {
