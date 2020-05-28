@@ -38,8 +38,8 @@ export class OrganizationService {
     private triplestoreService: TriplestoreService
   ) {
     setTimeout(() => {
-      setInterval(() => this.refreshOrganizations(), REFRESH_INTERVAL);
-      this.refreshOrganizations();
+      setInterval(() => this.getAllUsers(), REFRESH_INTERVAL);
+      this.getAllUsers();
     }, 3000)
   }
 
@@ -47,7 +47,7 @@ export class OrganizationService {
     return this.users;
   }
 
-  private refreshOrganizations() {
+  private getAllUsers() {
     this.triplestoreService.search<any>({
       type: 'MA.person',
       predicate: 'MA.role',
@@ -131,15 +131,17 @@ export class OrganizationService {
   }
 
   private preparePerson(persons: any[], organizations: { [id: string]: string }, section: { [id: string]: string }) {
-    return persons.map(p => {
-      const userOrganizations = p?.organisation;
-      return ({
-        id: p.id,
-        fullName: p.fullName || (`${p?.givenNames} ${p?.inheritedName}`),
-        emailAddress: p.emailAddress,
-        organisation: this.toName(userOrganizations, organizations),
-        section: this.toName(userOrganizations, section),
-      });
+    return persons
+      .filter(p => !!p.id)
+      .map(p => {
+        const userOrganizations = p?.organisation;
+        return ({
+          id: p.id,
+          fullName: p.fullName || (`${p?.givenNames} ${p?.inheritedName}`),
+          emailAddress: p.emailAddress,
+          organisation: this.toName(userOrganizations, organizations),
+          section: this.toName(userOrganizations, section),
+        });
     });
   }
 
