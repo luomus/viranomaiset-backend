@@ -27,6 +27,9 @@
     body {
       background-color: #2C3E50;
     }
+    a:hover {
+      text-decoration: none;
+    }
     .error {
       border: solid 2px #d62022;
       padding: 5px;
@@ -41,7 +44,7 @@
     .login-container {
       width: 300px;
       margin: 0 auto;
-      padding: 15px;
+      padding: 30px;
       background-color: #fefefe;
       border-radius: 10px;
     }
@@ -50,8 +53,12 @@
     }
     .auth-sources, .auth-sources li {
       list-style: none;
+      padding: 0 25px;
     }
-    .auth-sources li:not(:first-child) {
+    .auth-sources img {
+        max-width: 135px;
+    }
+    .auth-sources li {
       padding-top: 20px;
     }
   </style>
@@ -66,7 +73,12 @@
           {{#allowedLogin}}
             <li>
               <a href="{{lajiAuthUrl}}{{path}}?target={{systemId}}&allowUnapproved=false&next=">
-                <img src="https://cdn.laji.fi/images/laji-auth/{{method}}.png" alt="{{method}}" />
+                {{#isRegister}}
+                    <button class="btn btn-block btn-success">Luo tunnus</button>
+                {{/isRegister}}
+                {{^isRegister}}
+                    <img src="https://cdn.laji.fi/images/laji-auth/{{method}}.png" alt="{{method}}" />
+                {{/isRegister}}
               </a>
             </li>
           {{/allowedLogin}}
