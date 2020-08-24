@@ -18,6 +18,12 @@ export class ApiController {
       private downloadRequestService: DownloadRequestService
   ) {}
 
+  public fileDownload(req: Request, res: Response): void|Response<any> {
+    const address = `${apiUrl}/warehouse/download/secured/${req.query['id']}?personToken=${req.user['token']}`
+
+    return res.redirect(302, address);
+  }
+
   public async searchDownloadRequests(req: Request, res: Response): Promise<Response<IDownloadRequest[]>> {
     const user = ApiController.getUserId(req);
     if (!ApiController.isValidQueryToken(req)) {
