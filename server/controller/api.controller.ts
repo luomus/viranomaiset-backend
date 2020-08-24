@@ -63,6 +63,8 @@ export class ApiController {
     // convert public query to private
     const url = req.url
       .replace('/query/', '/private-query/')
+      .replace('downloadType=LIGHTWEIGHT', 'downloadType=AUTHORITIES_LIGHTWEIGHT')
+      .replace('downloadType=CITABLE', 'downloadType=AUTHORITIES_FULL')
       .replace(req.user['token'], '')
       .replace(req.user['publicToken'], req.user['token']) +
       (req.url.includes('?') ? '&' : '?') + 'personId=' + user;
