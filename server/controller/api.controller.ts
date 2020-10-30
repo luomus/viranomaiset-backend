@@ -11,6 +11,12 @@ const LOG_DENIED = 'API_REQUEST_DENIED';
 const LOG_SUCCESS = 'API_REQUEST_SUCCESS';
 const LOG_INVALID_TOKEN = 'API_REQUEST_INVALID_TOKEN';
 
+enum AllowedQuery {
+  no,
+  noGraphQL,
+  yes,
+}
+
 export class ApiController {
 
   constructor(
@@ -64,6 +70,16 @@ export class ApiController {
     return res.status(200).send(this.organizationService.getUsers());
   }
 
+  private static isAllowedQuery(url: string, body: string): AllowedQuery  {
+    if (typeof url !== 'string') {
+      return AllowedQuery.no;
+    }
+    if (!url.includes('/graphql')) {
+      return AllowedQuery.yes;
+    }
+    return allowedQueryHashes.indexOf(ApiController.getQueryHash(body)) === -1 ? AllowedQuery.noGraphQL : AllowedQuery.yes;
+  }
+
   public pipe(req: Request, res: Response): any {
     const user = ApiController.getUserId(req);
     // convert public query to private
@@ -77,8 +93,9 @@ export class ApiController {
 
     // change the body to have real token if it's there
     let body = req.body;
+    const allowed = ApiController.isAllowedQuery(url, body);
 
-    if (!ApiController.isAllowedQuery(url, body)) {
+    if (allowed !== AllowedQuery.yes) {
       LoggerService.info({
         user,
         action: LOG_DENIED,
@@ -90,7 +107,7 @@ export class ApiController {
         hash: ApiController.getQueryHash(body),
         remote: req.connection.remoteAddress || '',
       });
-      return res.status(403).send({error: 'query not allowed'});
+      return res.status(AllowedQuery.noGraphQL ? 406 : 403).send({error: 'query not allowed'});
     }
 
     if (typeof body === 'string') {
@@ -153,16 +170,6 @@ export class ApiController {
     } else {
       doRemoteRequest(user, url, body, req, res);
     }
-  }
-
-  private static isAllowedQuery(url: string, body: string) {
-    if (typeof url !== 'string') {
-      return false;
-    }
-    if (!url.includes('/graphql')) {
-      return true;
-    }
-    return allowedQueryHashes.indexOf(ApiController.getQueryHash(body)) !== -1;
   }
 
   private static getQueryHash(body: string) {
