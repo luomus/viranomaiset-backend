@@ -114,11 +114,11 @@ export class DownloadRequestService {
       type: 'HBF.downloadRequest'
     })
       .then(data => (data || []).map(d => this.rawToDownloadRequest(d, colRootMap)))
-      .then(data => data.filter(d => d.source === systemId));
+      .then(data => data.filter(d => d?.source === systemId));
   }
 
   private rawToDownloadRequest(raw: any, colRootMap: {[id: string]: string}): IDownloadRequest {
-    if (typeof raw !== 'object') {
+    if (typeof raw !== 'object' || !(raw.completed === 'true' || raw.completed === true)) {
       return undefined;
     }
     const roots = new Set<string>();
