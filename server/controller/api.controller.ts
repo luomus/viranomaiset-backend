@@ -4,7 +4,6 @@ import { accessToken, apiUrl, allowedQueryHashes } from '../config.local';
 import { LoggerService } from '../service/logger.service';
 import { sha1 } from 'object-hash';
 import { IColOrganization, OrganizationService } from '../service/organization.service';
-import { DownloadRequestService, IDownloadRequest } from '../service/download-request.service';
 import { URL } from 'url';
 
 const LOG_DENIED = 'API_REQUEST_DENIED';
@@ -20,37 +19,13 @@ enum AllowedQuery {
 export class ApiController {
 
   constructor(
-      private organizationService: OrganizationService,
-      private downloadRequestService: DownloadRequestService
+      private organizationService: OrganizationService
   ) {}
 
   public fileDownload(req: Request, res: Response): void|Response<any> {
     const address = `${apiUrl}/warehouse/download/secured/${req.query['id']}?personToken=${req.user['token']}`
 
     return res.redirect(302, address);
-  }
-
-  public async searchDownloadRequests(req: Request, res: Response): Promise<Response<IDownloadRequest[]>> {
-    const user = ApiController.getUserId(req);
-    if (!ApiController.isValidQueryToken(req)) {
-       return res.status(403).send({error: 'No sufficient rights'})
-    }
-    return this.downloadRequestService.searchDownloads(req.query as any)
-      .then(data => {
-        LoggerService.info({
-          user,
-          action: LOG_SUCCESS,
-          request: {
-            method: req.method,
-            url: req.url,
-          },
-          response: {
-            statusCode: 200,
-          },
-          remote: req.connection.remoteAddress || '',
-        });
-        return res.status(200).send(data);
-      });
   }
 
   public getUsers(req: Request, res: Response): Response<IColOrganization[]> {
