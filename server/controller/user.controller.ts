@@ -7,13 +7,14 @@ export class UserController {
 
   public async checkUser(req: Request, res: Response) {
     if (req.isAuthenticated()) {
-      return res.redirect(`/user/login?token=${req.user['publicToken']}`);
+      return res.redirect(`/user/login?token=${req.user['publicToken']}&next=${req.query.next || ''}`);
     }
     res.render('user/login', {
       allowedLogin: allowedLogin,
       systemId: systemId,
       lajiAuthUrl: lajiAuthUrl,
-      hasError: typeof req.query.error !== 'undefined'
+      hasError: typeof req.query.error !== 'undefined',
+      next: req.query.next || ''
     });
   }
 
@@ -29,7 +30,7 @@ export class UserController {
         if (err) {
           return next(err);
         }
-        res.redirect(`/user/login?token=${req.user['publicToken']}`);
+        res.redirect(`/user/login?token=${req.user['publicToken']}&next=${req.query.next || ''}`);
       });
     })(req, res, next);
   }

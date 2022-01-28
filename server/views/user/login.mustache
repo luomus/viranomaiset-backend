@@ -72,7 +72,7 @@
         <ul class="auth-sources">
           {{#allowedLogin}}
             <li>
-              <a href="{{lajiAuthUrl}}{{path}}?target={{systemId}}&allowUnapproved=false&next=">
+              <a href="{{lajiAuthUrl}}{{path}}?target={{systemId}}&allowUnapproved=false&next={{next}}&vir=true">
                 {{#isRegister}}
                     <button class="btn btn-block btn-success">Luo tunnus</button>
                 {{/isRegister}}

@@ -14,6 +14,6 @@ export class AuthController {
     if (req.url.startsWith('/user/login') || req.isAuthenticated()) {
       return next();
     }
-    res.redirect('/user/viranomaiset');
+    res.redirect(`/user/viranomaiset?next=${req.query.next || ''}`);
   };
 }
