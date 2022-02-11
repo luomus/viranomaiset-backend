@@ -21,7 +21,10 @@ export class UserController {
     });
   }
 
-  public authenticateUser(req: Request, res: Response, next: NextFunction) {
+  public authenticateUser(req: Request, res: Response) {
+    const {host} = req.headers;
+    const taskMatch = host?.match(/^\d+/);
+    const next = taskMatch?.[0];
     passport.authenticate('local', function (err, user, info) {
       if (err) {
         return next(err);
@@ -33,7 +36,7 @@ export class UserController {
         if (err) {
           return next(err);
         }
-        res.redirect(`/user/login?token=${req.user['publicToken']}&next=${req.query.next || ''}`);
+        res.redirect(`/user/login?token=${req.user['publicToken']}&next=${next || ''}`);
       });
     })(req, res, next);
   }
