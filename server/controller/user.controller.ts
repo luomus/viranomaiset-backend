@@ -9,16 +9,22 @@ export class UserController {
     if (req.isAuthenticated()) {
       return res.redirect(`/user/login?token=${req.user['publicToken']}&next=${req.query.next || ''}`);
     }
+    const {host} = req.headers;
+    const taskMatch = host?.match(/^\d+/);
+    const next = taskMatch?.[0];
     res.render('user/login', {
       allowedLogin: allowedLogin,
       systemId: systemId,
       lajiAuthUrl: lajiAuthUrl,
       hasError: typeof req.query.error !== 'undefined',
-      next: req.query.next || ''
+      next
     });
   }
 
   public authenticateUser(req: Request, res: Response, next: NextFunction) {
+    const {host} = req.headers;
+    const taskMatch = host?.match(/^\d+/);
+    const nextParam = taskMatch?.[0];
     passport.authenticate('local', function (err, user, info) {
       if (err) {
         return next(err);
@@ -30,7 +36,7 @@ export class UserController {
         if (err) {
           return next(err);
         }
-        res.redirect(`/user/login?token=${req.user['publicToken']}&next=${req.query.next || ''}`);
+        res.redirect(`/user/login?token=${req.user['publicToken']}&next=${nextParam || ''}`);
       });
     })(req, res, next);
   }
