@@ -23,7 +23,7 @@ export class ApiController {
   ) {}
 
   public fileDownload(req: Request, res: Response): void|Response<any> {
-    const address = `${apiUrl}/warehouse/download/secured/${req.query['id']}?personToken=${req.user['token']}`
+    const address = `${apiUrl}/warehouse/download/secured/${req.query['id']}?personToken=${req.user['token']}`;
 
     return res.redirect(302, address);
   }
@@ -102,18 +102,35 @@ export class ApiController {
     function doRemoteRequest(user: string, url: string, body, req: Request, res: Response<any>) {
       const start = Date.now();
       const apiTarget = new URL(apiUrl + url);
-      httpRequest[req.method.toLowerCase()](
-        apiTarget.toString(),
-        {
-          headers: {
-            ...req.headers,
-            'Host': apiTarget.hostname,
-            'content-length': typeof body === 'string' ? body.length : req.headers['content-length'],
-            'authorization': accessToken
-          },
-          ...(['GET', 'DELETE'].includes(req.method) ? {} : {body})
-        }
-      ).on('end', function () {
+
+      let request;
+      if (!url.includes('/geo-convert')) {
+        request = httpRequest[req.method.toLowerCase()](
+          apiTarget.toString(),
+          {
+            headers: {
+              ...req.headers,
+              'Host': apiTarget.hostname,
+              'content-length': typeof body === 'string' ? body.length : req.headers['content-length'],
+              'authorization': accessToken
+            },
+            ...(['GET', 'DELETE'].includes(req.method) ? {} : {body})
+          }
+        );
+      } else {
+        request = req.pipe(httpRequest(
+          apiTarget.toString(),
+          {
+            headers: {
+              ...req.headers,
+              'Host': apiTarget.hostname,
+              'authorization': accessToken
+            }
+          }
+        ));
+      }
+
+      request.on('end', function () {
         LoggerService.info({
           user,
           action: LOG_SUCCESS,
