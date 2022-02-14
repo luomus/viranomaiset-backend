@@ -10,7 +10,7 @@ function getNextFromRequestHost(req: Request) {
 
 function getNext(taskNumber: string) {
   const taskMatch = taskNumber?.match(/^\d+/);
-  return taskMatch ? "vir-" + taskMatch[0] : undefined;
+  return taskMatch ? "vir-" + taskMatch[0] : 'vir';
 }
 
 export class UserController {
