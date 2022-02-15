@@ -27,11 +27,11 @@ class Server {
     this.app.use('/user/', new UserRoutes().router);
     this.app.all('*', AuthController.authenticatedWithRedirect, function (req, res) {
       const {host} = req.headers;
-      const taskMatch = host?.match(/^\d+/);
+      const taskMatch = host?.match(/^\d+/)?.[0];
       res.status(200).sendFile(path.join(
         __dirname,
         taskMatch
-        ? '../../vir-tasks/client/index.html'
+        ? `../../vir-tasks/${taskMatch}/client/index.html`
         : '/../client/index.html'
       ));
     });
