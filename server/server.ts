@@ -26,7 +26,14 @@ class Server {
     this.app.use('/api/', new ApiRoutes().router);
     this.app.use('/user/', new UserRoutes().router);
     this.app.all('*', AuthController.authenticatedWithRedirect, function (req, res) {
-      res.status(200).sendFile(path.join(__dirname, '/../client/index.html'));
+      const {host} = req.headers;
+      const taskMatch = host?.match(/^\d+/);
+      res.status(200).sendFile(path.join(
+        __dirname,
+        taskMatch
+        ? '../../vir-tasks/client/index.html'
+        : '/../client/index.html'
+      ));
     });
   }
 
