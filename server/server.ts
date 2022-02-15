@@ -31,7 +31,7 @@ class Server {
       res.status(200).sendFile(path.join(
         __dirname,
         taskMatch
-        ? `../../vir-tasks/${taskMatch}/client/index.html`
+        ? `../../vir-tasks/${taskMatch}/index.html`
         : '/../client/index.html'
       ));
     });
