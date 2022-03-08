@@ -79,7 +79,7 @@ class Server {
         sameSite: true,
         domain: domain,
         path: '/',
-        maxAge: 3600000
+        maxAge: 172800000
       }
     }));
     this.app.use(passport.initialize());
