@@ -28,7 +28,7 @@ class Server {
     this.app.all('*', AuthController.authenticatedWithRedirect, function (req, res) {
       const {host} = req.headers;
       const taskMatch = host?.match(/^\d+/)?.[0];
-      res.setHeader('Cache-Control', 'max-age=0');
+      res.setHeader('Cache-Control', 'no-store');
       res.status(200).sendFile(path.join(
         __dirname,
         taskMatch
