@@ -104,7 +104,18 @@ export class ApiController {
       const apiTarget = new URL(apiUrl + url);
 
       let request;
-      if (!url.includes('/geo-convert')) {
+      if (url.includes('/geo-convert')) {
+        request = req.pipe(httpRequest(
+          apiTarget.toString(),
+          {
+            headers: {
+              ...req.headers,
+              'Host': apiTarget.hostname,
+              'authorization': accessToken
+            }
+          }
+        ));
+      } else {
         request = httpRequest[req.method.toLowerCase()](
           apiTarget.toString(),
           {
@@ -117,17 +128,6 @@ export class ApiController {
             ...(['GET', 'DELETE'].includes(req.method) ? {} : {body})
           }
         );
-      } else {
-        request = req.pipe(httpRequest(
-          apiTarget.toString(),
-          {
-            headers: {
-              ...req.headers,
-              'Host': apiTarget.hostname,
-              'authorization': accessToken
-            }
-          }
-        ));
       }
 
       request.on('end', function () {
