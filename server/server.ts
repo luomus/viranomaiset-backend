@@ -26,7 +26,15 @@ class Server {
     this.app.use('/api/', new ApiRoutes().router);
     this.app.use('/user/', new UserRoutes().router);
     this.app.all('*', AuthController.authenticatedWithRedirect, function (req, res) {
-      res.status(200).sendFile(path.join(__dirname, '/../client/index.html'));
+      const {host} = req.headers;
+      const taskMatch = host?.match(/^\d+/)?.[0];
+      res.setHeader('Cache-Control', 'no-store');
+      res.status(200).sendFile(path.join(
+        __dirname,
+        taskMatch
+        ? `../../vir-tasks/${taskMatch}/index.html`
+        : '/../client/index.html'
+      ));
     });
   }
 
@@ -72,7 +80,7 @@ class Server {
         sameSite: true,
         domain: domain,
         path: '/',
-        maxAge: 3600000
+        maxAge: 172800000
       }
     }));
     this.app.use(passport.initialize());
