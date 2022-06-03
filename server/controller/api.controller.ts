@@ -111,7 +111,7 @@ export class ApiController {
             headers: {
               ...req.headers,
               'Host': apiTarget.hostname,
-              'content-length': typeof body === 'string' ? body.length : req.headers['content-length'],
+              'content-length': typeof body === 'string' ? Buffer.byteLength(body) : req.headers['content-length'],
               'authorization': accessToken
             },
             ...(['GET', 'DELETE'].includes(req.method) ? {} : {body})
