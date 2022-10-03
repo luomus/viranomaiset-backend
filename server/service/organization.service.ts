@@ -130,8 +130,8 @@ export class OrganizationService {
     return result;
   }
 
-  private preparePerson(persons: any[], organizations: { [id: string]: string }, section: { [id: string]: string }) {
-    return persons
+  private preparePerson(persons: any[], organizations: { [id: string]: string }, section: { [id: string]: string }, includeExpired = false) {
+    const prepared = persons
       .filter(p => !!p.id)
       .map(p => {
         const userOrganizations = p?.organisation;
@@ -140,9 +140,19 @@ export class OrganizationService {
           fullName: p.fullName || (`${p?.givenNames} ${p?.inheritedName}`),
           emailAddress: p.emailAddress,
           organisation: this.toName(userOrganizations, organizations),
+          organisationAdmin: p.organisationAdmin?.map(oa => organizations[oa] ?? 'unknown') || [],
           section: this.toName(userOrganizations, section),
+          securePortalUserRoleExpires: p.securePortalUserRoleExpires
         });
     });
+    if (!includeExpired) {
+      return prepared.filter(p => {
+        return p.securePortalUserRoleExpires
+          ? new Date(p.securePortalUserRoleExpires) > new Date()
+          : true
+      });
+    }
+    return prepared;
   }
 
   private toName(organisations: any, organizations: { [id: string]: string }): string[] {
