@@ -134,14 +134,13 @@ export class OrganizationService {
     const prepared = persons
       .filter(p => !!p.id)
       .map(p => {
-        const userOrganizations = p?.organisation;
         return ({
           id: p.id,
           fullName: p.fullName || (`${p?.givenNames} ${p?.inheritedName}`),
           emailAddress: p.emailAddress,
-          organisation: this.toName(userOrganizations, organizations),
-          organisationAdmin: p.organisationAdmin?.map(oa => organizations[oa] ?? 'unknown') || [],
-          section: this.toName(userOrganizations, section),
+          organisation: this.toName(p?.organisation, organizations),
+          organisationAdmin: this.toName(p.organisationAdmin, organizations),
+          section: this.toName(p?.organisation, section),
           securePortalUserRoleExpires: p.securePortalUserRoleExpires
         });
     });
@@ -155,14 +154,20 @@ export class OrganizationService {
     return prepared;
   }
 
-  private toName(organisations: any, organizations: { [id: string]: string }): string[] {
-    if (organisations) {
-      if (Array.isArray(organisations)) {
-        return organisations.map(o => organizations[o] || 'unknown')
-      }
-      return [(organizations[organisations] || 'unknown')];
-    }
-    return ['unknown'];
+  // Triplestore values aren't formatted properly, so they can be non-arrays
+  // if there's only a single value. This function normalizes the value to
+  // be always an array.
+  private toArray(val: any) {
+    return !val
+      ? []
+      : Array.isArray(val)
+        ? val
+        : [val]
+  }
+
+
+  private toName(names: any[], nameMap: { [id: string]: string }): string[] {
+    return this.toArray(names).map(o => nameMap[o] || `unknown (${o})`);
   }
 
   private async findSubOrganizations(roots: any, fetched = {}): Promise<IColOrganization[]> {
