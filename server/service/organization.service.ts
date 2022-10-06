@@ -117,7 +117,7 @@ export class OrganizationService {
     const result = {};
     const toName = (organization): string => {
       let result: string;
-      ['organizationLevel2', 'organizationLevel3', 'organizationLevel4'].forEach(key => {
+      ['organizationLevel1', 'organizationLevel2', 'organizationLevel3', 'organizationLevel4'].forEach(key => {
         if (organization?.[key]?.en) {
           result = organization[key].en;
         }
