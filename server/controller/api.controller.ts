@@ -29,6 +29,22 @@ export class ApiController {
   }
 
   public getUsers(req: Request, res: Response): Response<IColOrganization[]> {
+    const isInvalidRes = this.userQueryIsInvalid(req, res);
+    if (isInvalidRes) {
+      return isInvalidRes;
+    }
+    return res.status(200).send(this.organizationService.getUsers());
+  }
+
+  public getUser(req: Request, res: Response): Response<IColOrganization[]> {
+    const isInvalidRes = this.userQueryIsInvalid(req, res);
+    if (isInvalidRes) {
+      return isInvalidRes;
+    }
+    return res.status(200).send(this.organizationService.getUser(req.params.id));
+  }
+
+  private userQueryIsInvalid(req: Request, res: Response) {
     const user = ApiController.getUserId(req);
     if (!ApiController.isValidQueryToken(req)) {
       return res.status(403).send({error: 'No sufficient rights'})
@@ -42,7 +58,6 @@ export class ApiController {
       },
       remote: req.connection.remoteAddress || '',
     });
-    return res.status(200).send(this.organizationService.getUsers());
   }
 
   private static isAllowedQuery(url: string, body: string): AllowedQuery  {

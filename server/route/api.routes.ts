@@ -26,6 +26,7 @@ export class ApiRoutes {
   routes() {
     this.router.get('/file-download', AuthController.authenticated, jsonParser, (req, res) => this.apiController.fileDownload(req, res));
     this.router.get('/authorities', AuthController.authenticated, jsonParser, (req, res) => this.apiController.getUsers(req, res));
+    this.router.get('/authorities/:id', AuthController.authenticated, jsonParser, (req, res) => this.apiController.getUser(req, res));
     this.router.all('*', AuthController.authenticated, jsonParser, (req, res) => this.apiController.pipe(req, res));
   }
 }

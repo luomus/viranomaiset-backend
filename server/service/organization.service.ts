@@ -47,6 +47,10 @@ export class OrganizationService {
     return this.users;
   }
 
+  public getUser(id: string): IColOrganization[] {
+    return this.users?.find(u => u.id === id);
+  }
+
   private getAllUsers() {
     this.triplestoreService.search<any>({
       type: 'MA.person',
@@ -139,7 +143,10 @@ export class OrganizationService {
           fullName: p.fullName || (`${p?.givenNames} ${p?.inheritedName}`),
           emailAddress: p.emailAddress,
           organisation: this.toName(p?.organisation, organizations),
-          organisationAdmin: this.toName(p.organisationAdmin, organizations),
+          organisationAdmin: this.toArray(p.organisationAdmin).map(o => ({
+            id: o,
+            value: this.mapName(o, organizations)
+          })),
           section: this.toName(p?.organisation, section),
           securePortalUserRoleExpires: p.securePortalUserRoleExpires
         });
@@ -167,7 +174,11 @@ export class OrganizationService {
 
 
   private toName(names: any[], nameMap: { [id: string]: string }): string[] {
-    return this.toArray(names).map(o => nameMap[o] || `unknown (${o})`);
+    return this.toArray(names).map(n => this.mapName(n, nameMap));
+  }
+
+  private mapName(org: string, nameMap: { [id: string]: string }) {
+    return nameMap[org] || `unknown (${org})`;
   }
 
   private async findSubOrganizations(roots: any, fetched = {}): Promise<IColOrganization[]> {
