@@ -1,4 +1,4 @@
-import { allowedRoles, rootCollections, userCollectionMap } from '../config.local';
+import { allowedRoles, userCollectionMap } from '../config.local';
 import { TriplestoreService } from './triplestore.service';
 
 interface IPerson {
@@ -43,16 +43,27 @@ export class OrganizationService {
     }, 3000)
   }
 
-  public getUsers(): IColOrganization[] {
+  public getUsers(includeExpired = false): IColOrganization[] {
+    if (!includeExpired) {
+      return this.users.filter(p => {
+        return p.securePortalUserRoleExpires
+          ? new Date(p.securePortalUserRoleExpires) > new Date()
+          : true
+      });
+    }
     return this.users;
   }
 
-  public getUser(id: string): IColOrganization[] {
-    return this.users?.find(u => u.id === id);
+  public async getUser(id: string): Promise<any> {
+    const p = await this.triplestoreService.search<any>({
+      type: 'MA.person',
+      subject: id
+    });
+    return this.prepareSinglePerson(p[0]);
   }
 
-  private getAllUsers() {
-    this.triplestoreService.search<any>({
+  getAllUsers() {
+    return this.triplestoreService.search<any>({
       type: 'MA.person',
       predicate: 'MA.role',
       objectresource: allowedRoles.filter(r => r !== 'MA.admin').join(',')
@@ -64,15 +75,18 @@ export class OrganizationService {
           type: 'MOS.organization',
           subject: Array.from(organizations.values()).join(',')
         })
-          .then(organizations => this.preparePerson(
-            persons,
-            this.organizationsToLookUp(organizations),
-            this.sectionsToLookUp(organizations),
-          ))
+          .then(organizations => {
+            this.organisations = this.organizationsToLookUp(organizations);
+            this.sections = this.sectionsToLookUp(organizations);
+            return this.preparePersons(persons)
+          })
       })
       .then(result => this.users = result)
       .catch(e => console.log('User list refresh failed', e));
   }
+
+  organisations: {[id: string]: string};
+  sections: {[id: string]: string};
 
   private addPersonInfoToCollections(persons: {[colID: string]: IPerson}, collections: any[], level = 0): IColOrganization[] {
     const result: IColOrganization[] = [];
@@ -134,30 +148,27 @@ export class OrganizationService {
     return result;
   }
 
-  private preparePerson(persons: any[], organizations: { [id: string]: string }, section: { [id: string]: string }, includeExpired = false) {
+  private prepareSinglePerson(p: any) {
+    return {
+      id: p.id,
+      fullName: p.fullName || (`${p?.givenNames} ${p?.inheritedName}`),
+      emailAddress: p.emailAddress,
+      organisation: this.toName(p?.organisation, this.organisations),
+      organisationAdmin: this.toArray(p.organisationAdmin).map(o => ({
+        id: o,
+        value: this.mapName(o, this.organisations)
+      })),
+      section: this.toName(p?.organisation, this.sections),
+      securePortalUserRoleExpires: p.securePortalUserRoleExpires
+    }
+  }
+
+  private preparePersons(persons: any[]) {
     const prepared = persons
       .filter(p => !!p.id)
       .map(p => {
-        return ({
-          id: p.id,
-          fullName: p.fullName || (`${p?.givenNames} ${p?.inheritedName}`),
-          emailAddress: p.emailAddress,
-          organisation: this.toName(p?.organisation, organizations),
-          organisationAdmin: this.toArray(p.organisationAdmin).map(o => ({
-            id: o,
-            value: this.mapName(o, organizations)
-          })),
-          section: this.toName(p?.organisation, section),
-          securePortalUserRoleExpires: p.securePortalUserRoleExpires
-        });
+        return this.prepareSinglePerson(p);
     });
-    if (!includeExpired) {
-      return prepared.filter(p => {
-        return p.securePortalUserRoleExpires
-          ? new Date(p.securePortalUserRoleExpires) > new Date()
-          : true
-      });
-    }
     return prepared;
   }
 

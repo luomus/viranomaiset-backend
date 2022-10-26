@@ -17,6 +17,7 @@ export class UserController {
 
   public async checkUser(req: Request, res: Response) {
     if (req.isAuthenticated()) {
+      console.log('redirect user');
       return res.redirect(`/user/login?token=${req.user['publicToken']}&next=${req.query.next || ''}`);
     }
     const next = getNextFromRequestHost(req);
@@ -36,12 +37,14 @@ export class UserController {
         return next(err);
       }
       if (!user) {
+        console.log('redirect user err');
         return res.redirect('/user/viranomaiset?error');
       }
       req.logIn(user, function (err) {
         if (err) {
           return next(err);
         }
+        console.log('redirect user login');
         res.redirect(`/user/login?token=${req.user['publicToken']}&next=${nextParam || ''}`);
       });
     })(req, res, next);

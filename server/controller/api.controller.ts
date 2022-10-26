@@ -33,15 +33,15 @@ export class ApiController {
     if (isInvalidRes) {
       return isInvalidRes;
     }
-    return res.status(200).send(this.organizationService.getUsers());
+    return res.status(200).send(this.organizationService.getUsers(req.query.includeExpired === 'true'));
   }
 
-  public getUser(req: Request, res: Response): Response<IColOrganization[]> {
+  public async getUser(req: Request, res: Response): Promise<Response<IColOrganization[]>> {
     const isInvalidRes = this.userQueryIsInvalid(req, res);
     if (isInvalidRes) {
       return isInvalidRes;
     }
-    return res.status(200).send(this.organizationService.getUser(req.params.id));
+    return res.status(200).send(await this.organizationService.getUser(req.params.id));
   }
 
   private userQueryIsInvalid(req: Request, res: Response) {
