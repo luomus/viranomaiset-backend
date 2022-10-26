@@ -78,7 +78,7 @@ export class OrganizationService {
           .then(organizations => {
             this.organisations = this.organizationsToLookUp(organizations);
             this.sections = this.sectionsToLookUp(organizations);
-            return this.preparePersons(persons)
+            return this.preparePersons(persons);
           })
       })
       .then(result => this.users = result)
@@ -153,12 +153,9 @@ export class OrganizationService {
       id: p.id,
       fullName: p.fullName || (`${p?.givenNames} ${p?.inheritedName}`),
       emailAddress: p.emailAddress,
-      organisation: this.toName(p?.organisation, this.organisations),
-      organisationAdmin: this.toArray(p.organisationAdmin).map(o => ({
-        id: o,
-        value: this.mapName(o, this.organisations)
-      })),
-      section: this.toName(p?.organisation, this.sections),
+      organisation: this.toIdValuePairs(p?.organisation, this.organisations),
+      organisationAdmin: this.toIdValuePairs(p.organisationAdmin, this.organisations),
+      section: this.toIdValuePairs(p?.organisation, this.sections),
       securePortalUserRoleExpires: p.securePortalUserRoleExpires
     }
   }
@@ -184,8 +181,11 @@ export class OrganizationService {
   }
 
 
-  private toName(names: any[], nameMap: { [id: string]: string }): string[] {
-    return this.toArray(names).map(n => this.mapName(n, nameMap));
+  private toIdValuePairs(val: any, nameMap: { [id: string]: string }) {
+    return this.toArray(val).map(o => ({
+      id: o,
+      value: this.mapName(o, nameMap)
+    }));
   }
 
   private mapName(org: string, nameMap: { [id: string]: string }) {
