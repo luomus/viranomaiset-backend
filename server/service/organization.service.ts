@@ -59,7 +59,7 @@ export class OrganizationService {
       type: 'MA.person',
       subject: id
     });
-    return this.prepareSinglePerson(p[0]);
+    return this.prepareSinglePerson(p[0], !!"domain only");
   }
 
   getAllUsers() {
@@ -148,11 +148,11 @@ export class OrganizationService {
     return result;
   }
 
-  private prepareSinglePerson(p: any) {
+  private prepareSinglePerson(p: any, emailDomainOnly = false) {
     return {
       id: p.id,
       fullName: p.fullName || (`${p?.givenNames} ${p?.inheritedName}`),
-      emailAddress: p.emailAddress,
+      emailAddress: this.prepareEmailAddress(p.emailAddress, emailDomainOnly),
       organisation: this.toIdValuePairs(p?.organisation, this.organisations),
       organisationAdmin: this.toIdValuePairs(p.organisationAdmin, this.organisations),
       section: this.toIdValuePairs(p?.organisation, this.sections),
@@ -190,6 +190,13 @@ export class OrganizationService {
 
   private mapName(org: string, nameMap: { [id: string]: string }) {
     return nameMap[org] || `unknown (${org})`;
+  }
+
+  private prepareEmailAddress(emailAddress: string, domainOnly = false) {
+    return domainOnly
+      ? `@` + emailAddress?.split('@')?.[1]
+      : emailAddress
+
   }
 
   private async findSubOrganizations(roots: any, fetched = {}): Promise<IColOrganization[]> {
