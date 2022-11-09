@@ -4,6 +4,7 @@ import * as httpRequest from 'request';
 import { lajiAuthUrl, systemId, allowedRoles, allowedLogin } from '../config.local';
 import * as random from 'crypto-random-string';
 import { LoggerService } from '../service/logger.service';
+import { accessToken, apiUrl, allowedQueryHashes } from '../config.local';
 
 // TODO this needs to be moved away from here if serving more than one instance of this backend
 const authorized_users = {};
@@ -19,20 +20,37 @@ passport.use('local', new Strategy(
       if (error) {
         return done(null, false, { message: 'Incorrect credentials' });
       }
-      const result: any = JSON.parse(body) || {};
-      const userRoles = result.user && result.user.roles || [];
+      const authResult: any = JSON.parse(body) || {};
+      const userRoles = authResult.user?.roles || [];
       const hasRightRole  = allowedRoles.some(allowedRole => userRoles.includes(allowedRole));
-      const hasRightMethod = allowedLogin.some(allowed => result.source === allowed.method);
-      if (response.statusCode == 200 && result.target === systemId && hasRightRole && hasRightMethod) {
+      const hasRightMethod = allowedLogin.some(allowed => authResult.source === allowed.method);
+
+      if (response.statusCode != 200 || authResult.target !== systemId || !hasRightRole || !hasRightMethod) {
+        return done(null, false, { message: 'Incorrect credentials' });
+      }
+
+      const apiPersonUrl = `${apiUrl}/person/${token}?access_token=${accessToken}`;
+      httpRequest(apiPersonUrl, function(error, response, body) {
+        if (error) {
+          return done(null, false, { message: 'Couldn\'t fetch user details for auth' });
+        }
+        const apiResult: any = JSON.parse(body) || {};
+        const isExpired = apiResult.securePortalUserRoleExpires && new Date(apiResult.securePortalUserRoleExpires) <= new Date();
+        if (isExpired) {
+          return done(null, false, { message: 'Access expired' });
+        }
+
+        const user = {
+          ...apiResult,
+          token,
+          publicToken: random({length: 64})
+        };
         LoggerService.info({
-          user: result.user['qname'],
+          user: user['id'],
           action: 'LOGIN'
         });
-        result.user['token'] = token;
-        result.user['publicToken'] = random({length: 64});
-        return done(null, result.user);
-      }
-      return done(null, false, { message: 'Incorrect credentials' });
+        return done(null, user);
+      });
     });
   }
 ));
