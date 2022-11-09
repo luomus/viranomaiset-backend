@@ -20,21 +20,9 @@ passport.use('local', new Strategy(
         return done(null, false, { message: 'Incorrect credentials' });
       }
       const result: any = JSON.parse(body) || {};
-      const roles = result.user && result.user.roles || [];
-      let hasRightRole = false;
-      let hasRightMethod = false;
-      for (let i of allowedRoles) {
-        if (hasRightRole) {
-          break;
-        }
-        hasRightRole = roles.indexOf(i) !== -1;
-      }
-      for (let allow of allowedLogin) {
-        if (hasRightMethod) {
-          break;
-        }
-        hasRightMethod = result.source === allow.method;
-      }
+      const userRoles = result.user && result.user.roles || [];
+      const hasRightRole  = allowedRoles.some(allowedRole => userRoles.includes(allowedRole));
+      const hasRightMethod = allowedLogin.some(allowed => result.source === allowed.method);
       if (response.statusCode == 200 && result.target === systemId && hasRightRole && hasRightMethod) {
         LoggerService.info({
           user: result.user['qname'],
