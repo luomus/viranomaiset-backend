@@ -207,7 +207,7 @@ export class ApiController {
   }
 
   private static getUserId(req: Request, unknown: string = '[unknown]') {
-    return req.user && (req.user as any).qname || unknown;
+    return req.user && (req.user as any).id || unknown;
   }
 
 }
