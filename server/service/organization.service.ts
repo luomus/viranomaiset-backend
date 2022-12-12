@@ -64,25 +64,40 @@ export class OrganizationService {
 
   getAllUsers() {
     return this.triplestoreService.search<any>({
-      type: 'MA.person',
-      predicate: 'MA.role',
+      type: 'MA.person', predicate: 'MA.role',
       objectresource: allowedRoles.filter(r => r !== 'MA.admin').join(',')
     })
       .then(persons => {
         const organizations = new Set<string>();
         persons.forEach(p => Array.isArray(p.organisation) ? p.organisation.forEach(o => organizations.add(o)) : organizations.add(p.organisation))
-        return this.triplestoreService.search<any>({
-          type: 'MOS.organization',
-          subject: Array.from(organizations.values()).join(',')
+        return this.getOrganisationsFromRemote(organizations).then(organizations => {
+          this.organisations = this.organizationsToLookUp(organizations);
+          this.sections = this.sectionsToLookUp(organizations);
+          return this.preparePersons(persons);
         })
-          .then(organizations => {
-            this.organisations = this.organizationsToLookUp(organizations);
-            this.sections = this.sectionsToLookUp(organizations);
-            return this.preparePersons(persons);
-          })
       })
-      .then(result => this.users = result)
+      .then(result => {
+        this.users = result
+      })
       .catch(e => console.log('User list refresh failed', e));
+  }
+
+  private organisationsCacheKey: string;
+  private organisationsCacheResponse: string[];
+  private getOrganisationsFromRemote(organisations: Set<string>) {
+    const arr = Array.from(organisations.values());
+    const query = arr.sort().join(',');
+    if (query === this.organisationsCacheKey) {
+      return Promise.resolve(this.organisationsCacheResponse);
+    }
+    this.organisationsCacheKey = query;
+    return this.triplestoreService.search<any>({
+      type: 'MOS.organization',
+      subject: query
+    }).then(res => {
+      this.organisationsCacheResponse = res;
+      return res;
+    });
   }
 
   organisations: {[id: string]: string};

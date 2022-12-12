@@ -35,7 +35,7 @@ export class TriplestoreService {
       if (!data) {
         return reject('No data from the triplestore server');
       }
-      const store = rdf.graph()
+      const store = rdf.graph();
       rdf.parse(data, store, 'http://tun.fi/', 'application/rdf+xml')
       rdf.serialize(null, store, 'http://tun.fi/', 'application/ld+json', (err, jsonldData) => {
         if (err) {

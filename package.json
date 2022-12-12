@@ -57,7 +57,7 @@
     "passport": "^0.4.1",
     "passport-local": "^1.0.0",
     "path": "^0.12.7",
-    "rdflib": "^1.2.0",
+    "rdflib": "^2.2.21",
     "request": "^2.88.2",
     "rimraf": "^3.0.2",
     "ts-helpers": "^1.1.2",
