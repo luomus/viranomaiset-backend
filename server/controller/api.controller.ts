@@ -67,7 +67,6 @@ export class ApiController {
     if (!url.includes('/graphql')) {
       return AllowedQuery.yes;
     }
-    console.log(ApiController.getQueryHash(body));
     return allowedQueryHashes.indexOf(ApiController.getQueryHash(body)) === -1 ? AllowedQuery.noGraphQL : AllowedQuery.yes;
   }
 
