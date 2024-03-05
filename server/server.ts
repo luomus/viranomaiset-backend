@@ -51,7 +51,8 @@ class Server {
             "'unsafe-eval'",
             "'sha256-5cD+sF5UmRfpb/CalLmJdYzf23tFwPPfvsRDWZa59xM='",
             'www.google-analytics.com',
-            'https://cdnjs.cloudflare.com/ajax/libs/openseadragon/2.2.1/openseadragon.min.js'
+            'https://cdnjs.cloudflare.com/ajax/libs/openseadragon/2.2.1/openseadragon.min.js',
+            "'sha256-MhtPZXr7+LpJUY5qtMutB+qWfQtMaPccfe7QXtCcEYc='"
           ]
         }
       },
