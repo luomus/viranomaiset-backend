@@ -10,7 +10,7 @@ function getNextFromRequestHost(req: Request) {
 
 function getNext(taskNumber: string) {
   const taskMatch = taskNumber?.match(/^\d+/);
-  return taskMatch ? "vir-" + taskMatch[0] : 'vir';
+  return taskMatch ? 'vir-' + taskMatch[0] : '';
 }
 
 export class UserController {
@@ -19,18 +19,18 @@ export class UserController {
     if (req.isAuthenticated()) {
       return res.redirect(`/user/login?token=${req.user['publicToken']}&next=${req.query.next || ''}`);
     }
-    const next = getNextFromRequestHost(req);
+    const next = getNextFromRequestHost(req) || (req.query.next as string|undefined) || '';
     res.render('user/login', {
       allowedLogin: allowedLogin,
       systemId: systemId,
       lajiAuthUrl: lajiAuthUrl,
       hasError: typeof req.query.error !== 'undefined',
-      next
+      next: encodeURIComponent(next)
     });
   }
 
   public authenticateUser(req: Request, res: Response, next: NextFunction) {
-    const nextParam = getNextFromRequestHost(req);
+    const nextParam = getNextFromRequestHost(req) || req.body.next || '';
     passport.authenticate('local', function (err, user, info) {
       if (err) {
         return next(err);
@@ -42,7 +42,7 @@ export class UserController {
         if (err) {
           return next(err);
         }
-        res.redirect(`/user/login?token=${req.user['publicToken']}&next=${nextParam || ''}`);
+        res.redirect(`/user/login?token=${req.user['publicToken']}&next=${encodeURIComponent(nextParam)}`);
       });
     })(req, res, next);
   }
