@@ -9,7 +9,7 @@ function getNextFromRequestHost(req: Request) {
 }
 
 function getNext(taskNumber: string) {
-  const taskMatch = taskNumber?.match(/^\d+$/);
+  const taskMatch = taskNumber?.match(/^\d+/);
   return taskMatch ? taskMatch[0] : '';
 }
 
