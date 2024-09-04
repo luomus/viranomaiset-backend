@@ -30,7 +30,10 @@ export class UserController {
   }
 
   public authenticateUser(req: Request, res: Response, next: NextFunction) {
-    const nextParam = getNextFromRequestHost(req) || req.body.next || '';
+    let nextParam = getNextFromRequestHost(req) || req.body.next || '';
+    if (nextParam.match(/^vir-\d+$/)) {
+      nextParam = '';
+    }
     passport.authenticate('local', function (err, user, info) {
       if (err) {
         return next(err);
