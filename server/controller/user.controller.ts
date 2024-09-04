@@ -9,8 +9,8 @@ function getNextFromRequestHost(req: Request) {
 }
 
 function getNext(taskNumber: string) {
-  const taskMatch = taskNumber?.match(/^\d+/);
-  return taskMatch ? 'vir-' + taskMatch[0] : '';
+  const taskMatch = taskNumber?.match(/^\d+$/);
+  return taskMatch ? taskMatch[0] : '';
 }
 
 export class UserController {
@@ -31,7 +31,7 @@ export class UserController {
 
   public authenticateUser(req: Request, res: Response, next: NextFunction) {
     let nextParam = getNextFromRequestHost(req) || req.body.next || '';
-    if (nextParam.match(/^vir-\d+$/)) {
+    if (nextParam.match(/^\d+$/)) {
       nextParam = '';
     }
     passport.authenticate('local', function (err, user, info) {
