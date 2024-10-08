@@ -5,6 +5,7 @@ import { LoggerService } from '../service/logger.service';
 import { sha1 } from 'object-hash';
 import { IColOrganization, OrganizationService } from '../service/organization.service';
 import { URL } from 'url';
+import { replacePublicTokenInUrl, replacePublicTokenInBody } from '../utils/person-token-utils';
 
 const LOG_DENIED = 'API_REQUEST_DENIED';
 const LOG_SUCCESS = 'API_REQUEST_SUCCESS';
@@ -73,12 +74,10 @@ export class ApiController {
   public pipe(req: Request, res: Response): any {
     const user = ApiController.getUserId(req);
     // convert public query to private
-    const url = req.url
+    const url = replacePublicTokenInUrl(req.url, req.user['publicToken'], req.user['token'])
       .replace('/query/', '/private-query/')
       .replace('downloadType=LIGHTWEIGHT', 'downloadType=AUTHORITIES_LIGHTWEIGHT')
-      .replace('downloadType=CITABLE', 'downloadType=AUTHORITIES_FULL')
-      .replace(req.user['token'], '')
-      .replace(req.user['publicToken'], req.user['token']) +
+      .replace('downloadType=CITABLE', 'downloadType=AUTHORITIES_FULL') +
       (req.url.includes('?') ? '&' : '?') + 'personId=' + user;
 
     // change the body to have real token if it's there
@@ -100,19 +99,7 @@ export class ApiController {
       return res.status(AllowedQuery.noGraphQL ? 406 : 403).send({error: 'query not allowed'});
     }
 
-    if (typeof body === 'string') {
-      try {
-        const rePublic = new RegExp(req.user['publicToken'], 'g');
-        const rePrivate = new RegExp(req.user['token'], 'g');
-        body = body
-          .replace(rePrivate, '')
-          .replace(rePublic, req.user['token']);
-      } catch (e) {
-        body = '';
-      }
-    } else if (typeof body === 'object' && Object.keys(body).length === 0) {
-      body = '';
-    }
+    body = replacePublicTokenInBody(body, req.user['publicToken'], req.user['token']);
 
     function doRemoteRequest(user: string, url: string, body, req: Request, res: Response<any>) {
       const start = Date.now();
