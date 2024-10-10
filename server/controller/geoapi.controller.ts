@@ -18,6 +18,7 @@ export class GeoapiController {
         headers: {
           ...req.headers,
           'Host': apiTarget.hostname,
+          'Content-Length': typeof body === 'string' ? Buffer.byteLength(body) : req.headers['content-length'],
           'Authorization': geoApiAuth
         },
         ...(['GET', 'DELETE'].includes(req.method) ? {} : {body})
@@ -26,7 +27,7 @@ export class GeoapiController {
 
     request.on('response', async (response) => {
       // Make sure that we don't return 403 since that causes a redirect.
-      const statusCode = response.statusCode === 403
+      const statusCode = [401, 403].includes(response.statusCode)
         ? 500
         : response.statusCode
 
