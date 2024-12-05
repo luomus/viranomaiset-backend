@@ -5,7 +5,6 @@ import { ApiController } from '../controller/api.controller';
 import { AdminController } from '../controller/admin.controller';
 import { OrganizationService } from '../service/organization.service';
 import { TriplestoreService } from '../service/triplestore.service';
-import { GeoapiController } from '../controller/geoapi.controller';
 
 const jsonParser = bodyParser.text({
   type: ['application/+json', 'application/json', 'text/plain']
@@ -19,7 +18,6 @@ export class ApiRoutes {
   public organizationService = new OrganizationService(triplestoreService);
   public apiController: ApiController = new ApiController(this.organizationService);
   public adminController: AdminController = new AdminController(this.organizationService);
-  public geoapiController: GeoapiController = new GeoapiController();
 
   constructor() {
     this.router = Router();
@@ -31,7 +29,6 @@ export class ApiRoutes {
     this.router.get('/authorities', AuthController.authenticated, jsonParser, (req, res) => this.apiController.getUsers(req, res));
     this.router.get('/authorities/:id', AuthController.authenticated, jsonParser, (req, res) => this.apiController.getUser(req, res));
     this.router.use('/admin', AuthController.authenticated, jsonParser, (req, res) => this.adminController.proxyToLajiAuth(req, res));
-    this.router.use('/geoapi', AuthController.authenticated, jsonParser, (req, res) => this.geoapiController.proxyToGeoapi(req, res));
     this.router.all('*', AuthController.authenticated, jsonParser, (req, res) => this.apiController.pipe(req, res));
   }
 }
