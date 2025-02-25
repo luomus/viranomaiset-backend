@@ -1,14 +1,12 @@
 {
   "name": "virannomaiset-laji-fi",
   "version": "1.0.0",
-  "description": "Private protal for finnish authorities",
+  "description": "Private portal for the Finnish authorities",
   "main": "server/server.js",
   "license": "MIT",
   "scripts": {
     "start": "tsc -p ./server  && concurrently \"tsc -w -p ./server\" \"npm run assets-watch\" \"nodemon dist/server/server.js\"",
     "test": "ng test --watch=false",
-    "pree2e": "webdriver-manager update",
-    "e2e": "protractor",
     "build": "npm run assets && tsc -p ./server",
     "assets-watch": "cpx \"./server/**/*.{html,mustache,css}\" \"./dist/server\" -w",
     "assets": "cpx \"./server/**/*.{html,mustache,css}\" \"./dist/server\""
@@ -75,8 +73,6 @@
     "build-asset": "^2.0.6",
     "codelyzer": "5.2.2",
     "concurrently": "^5.1.0",
-    "nodemon": "^2.0.2",
-    "protractor": "5.4.3",
-    "webdriver-manager": "12.1.7"
+    "nodemon": "^2.0.2"
   }
 }
