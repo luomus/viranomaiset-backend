@@ -1,5 +1,6 @@
 {
   "compilerOptions": {
+    "types": [],
     "declaration": false,
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
@@ -9,9 +10,6 @@
     "moduleResolution": "node",
     "outDir": "../dist/server",
     "sourceMap": true,
-    "target": "es6",
-    "typeRoots": [
-      "../node_modules/@types"
-    ]
+    "target": "es6"
   }
 }

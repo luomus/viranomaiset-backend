@@ -25,7 +25,7 @@ export class TriplestoreService {
     })
       .then((res) => res.text())
       .then(rdf => this.rdfToJsonLd(rdf))
-      .then(json => jsonld.compact(json, TriplestoreService.getContext(query)))
+      .then(json => jsonld.compact(json, TriplestoreService.getContext(query) as any))
       .then(data => TriplestoreService.findDataArray(data))
       .then(data => this.convertToSort(data) as T[])
   }

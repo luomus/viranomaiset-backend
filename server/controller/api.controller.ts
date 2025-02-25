@@ -3,7 +3,7 @@ import * as httpRequest from 'request';
 import { accessToken, apiUrl, allowedQueryHashes } from '../config.local';
 import { LoggerService } from '../service/logger.service';
 import { sha1 } from 'object-hash';
-import { VirUser, OrganizationService } from '../service/organization.service';
+import { OrganizationService } from '../service/organization.service';
 import { URL } from 'url';
 import { replacePublicTokenInUrl, replacePublicTokenInBody } from '../utils/person-token-utils';
 
@@ -23,26 +23,26 @@ export class ApiController {
       private organizationService: OrganizationService
   ) {}
 
-  public fileDownload(req: Request, res: Response): void|Response<any> {
+  public fileDownload(req: Request, res: Response) {
     const address = `${apiUrl}/warehouse/download/secured/${req.query['id']}?personToken=${req.user['token']}`;
 
-    return res.redirect(302, address);
+    res.redirect(302, address);
   }
 
-  public getUsers(req: Request, res: Response): Response<VirUser[]> {
+  public getUsers(req: Request, res: Response) {
     const isInvalidRes = this.userQueryIsInvalid(req, res);
     if (isInvalidRes) {
-      return isInvalidRes;
+      return;
     }
-    return res.status(200).send(this.organizationService.getUsers(req.query.includeExpired === 'true'));
+    res.status(200).send(this.organizationService.getUsers(req.query.includeExpired === 'true'));
   }
 
-  public async getUser(req: Request, res: Response): Promise<Response<VirUser[]>> {
+  public async getUser(req: Request, res: Response) {
     const isInvalidRes = this.userQueryIsInvalid(req, res);
     if (isInvalidRes) {
-      return isInvalidRes;
+      return;
     }
-    return res.status(200).send(await this.organizationService.getUser(req.params.id));
+    res.status(200).send(await this.organizationService.getUser(req.params.id));
   }
 
   private userQueryIsInvalid(req: Request, res: Response) {
@@ -153,13 +153,14 @@ export class ApiController {
 
     // logout also from the backend when logging out
     if (url.indexOf('/person-token/') === 0 && req.method === 'DELETE') {
-      req.logout();
-      req.session.destroy(() => {
-        doRemoteRequest(user, url, body, req, res);
-      });
-      LoggerService.info({
-        user,
-        action: 'LOGOUT'
+      req.logout(function () {
+        req.session.destroy(() => {
+          doRemoteRequest(user, url, body, req, res);
+        });
+        LoggerService.info({
+          user,
+          action: 'LOGOUT'
+        });
       });
     } else {
       doRemoteRequest(user, url, body, req, res);

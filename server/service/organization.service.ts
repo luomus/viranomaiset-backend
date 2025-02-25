@@ -52,7 +52,7 @@ export class OrganizationService {
       type: 'MA.person',
       subject: id
     });
-    return this.prepareSinglePerson(p[0], !!"domain only");
+    return this.prepareSinglePerson(p[0], true);
   }
 
   refreshUsers(): Promise<void> {

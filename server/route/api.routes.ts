@@ -29,6 +29,6 @@ export class ApiRoutes {
     this.router.get('/authorities', AuthController.authenticated, jsonParser, (req, res) => this.apiController.getUsers(req, res));
     this.router.get('/authorities/:id', AuthController.authenticated, jsonParser, (req, res) => this.apiController.getUser(req, res));
     this.router.use('/admin', AuthController.authenticated, jsonParser, (req, res) => this.adminController.proxyToLajiAuth(req, res));
-    this.router.all('*', AuthController.authenticated, jsonParser, (req, res) => this.apiController.pipe(req, res));
+    this.router.all('*all', AuthController.authenticated, jsonParser, (req, res) => this.apiController.pipe(req, res));
   }
 }

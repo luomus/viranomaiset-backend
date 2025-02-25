@@ -2,7 +2,7 @@ import * as passport from 'passport';
 import { Strategy } from 'passport-local';
 import * as httpRequest from 'request';
 import { lajiAuthUrl, systemId, allowedRoles, allowedLogin } from '../config.local';
-import * as random from 'crypto-random-string';
+import random from 'crypto-random-string';
 import { LoggerService } from '../service/logger.service';
 import { accessToken, apiUrl, allowedQueryHashes } from '../config.local';
 

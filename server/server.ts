@@ -1,5 +1,5 @@
 import * as express from 'express';
-import * as helmet from 'helmet';
+import helmet from 'helmet';
 import * as path from 'path';
 import * as compression from 'compression';
 import * as expressSession from 'express-session';
@@ -25,7 +25,7 @@ class Server {
   public routes(): void {
     this.app.use('/api/', new ApiRoutes().router);
     this.app.use('/user/', new UserRoutes().router);
-    this.app.all('*', AuthController.authenticatedWithRedirect, function (req, res) {
+    this.app.all('*all', AuthController.authenticatedWithRedirect, function (req, res) {
       const {host} = req.headers;
       const taskMatch = host?.match(/^\d+/)?.[0];
       res.setHeader('Cache-Control', 'no-store');
@@ -40,7 +40,7 @@ class Server {
 
   public config(): void {
     this.app.disable('x-powered-by');
-    this.app.use(helmet({
+    /*this.app.use(helmet({
       contentSecurityPolicy: {
         directives: {
           defaultSrc: allowedResourceSources,
@@ -66,7 +66,7 @@ class Server {
         }
       },
       referrerPolicy: {policy: 'same-origin'}
-    }));
+    }));*/
     this.app.use(compression());
     this.app.use(bodyParser.urlencoded({extended: false}));
     this.app.use(bodyParser.text());
