@@ -158,7 +158,7 @@ export class OrganizationService {
 
   private prepareEmailAddress(emailAddress: string, domainOnly = false): string {
     return domainOnly
-      ? `@` + emailAddress?.split('@')?.[1]
+      ? '@' + emailAddress?.split('@')?.[1]
       : emailAddress
   }
 }

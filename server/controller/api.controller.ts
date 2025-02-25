@@ -173,6 +173,7 @@ export class ApiController {
         const data = JSON.parse(body);
         return sha1((data || {}).query);
       } catch (e) {
+        //
       }
     }
     return '';

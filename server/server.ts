@@ -10,7 +10,7 @@ import { domain, secret } from './config.local';
 import { serverPort } from './config';
 import { AuthController } from './controller/auth.controller';
 import { UserRoutes } from './route/user.routes';
-const mustacheExpress = require('mustache-express');
+import * as mustacheExpress from 'mustache-express';
 
 class Server {
   public app: express.Application;
@@ -67,6 +67,7 @@ class Server {
     this.app.use(express.static(path.join(__dirname, '/../client'), {index: false}));
 
     // minimalistic info on error
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     this.app.use(function(err: any, req: express.Request, res: express.Response, next: express.NextFunction) {
       res.status(err.status || 500);
       res.json({
@@ -78,10 +79,10 @@ class Server {
 
 
   public start(): void {
-    this.app.listen(this.app.get("port"), () => {
+    this.app.listen(this.app.get('port'), () => {
       console.log(
-        "Running at http://localhost:%d",
-        this.app.get("port")
+        'Running at http://localhost:%d',
+        this.app.get('port')
       );
     });
   }

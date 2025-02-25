@@ -34,7 +34,7 @@ export class UserController {
     if (nextParam.match(/^\d+$/)) {
       nextParam = '';
     }
-    passport.authenticate('local', function (err, user, info) {
+    passport.authenticate('local', function (err, user) {
       if (err) {
         return next(err);
       }

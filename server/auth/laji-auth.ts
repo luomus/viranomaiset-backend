@@ -4,7 +4,7 @@ import * as httpRequest from 'request';
 import { lajiAuthUrl, systemId, allowedRoles, allowedLogin } from '../config.local';
 import random from 'crypto-random-string';
 import { LoggerService } from '../service/logger.service';
-import { accessToken, apiUrl, allowedQueryHashes } from '../config.local';
+import { accessToken, apiUrl } from '../config.local';
 
 // TODO this needs to be moved away from here if serving more than one instance of this backend
 const authorized_users = {};
