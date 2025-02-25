@@ -10,10 +10,3 @@ export const triplestoreAuth = '';
 export const allowedRoles = [];
 export const allowedLogin = [];
 export const allowedQueryHashes = [];
-export const allowedResourceSources = [];
-export const rootCollections = [];
-export const userCollectionMap = {
-  '<collectionID>': [
-    '<userID>'
-  ]
-}

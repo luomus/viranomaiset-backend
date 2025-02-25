@@ -1,5 +1,4 @@
 import * as express from 'express';
-import helmet from 'helmet';
 import * as path from 'path';
 import * as compression from 'compression';
 import * as expressSession from 'express-session';
@@ -7,7 +6,7 @@ import * as bodyParser from 'body-parser';
 import * as cookieParser from 'cookie-parser';
 import * as passport from 'passport';
 import { ApiRoutes } from './route/api.routes';
-import { domain, secret, allowedResourceSources } from './config.local';
+import { domain, secret } from './config.local';
 import { serverPort } from './config';
 import { AuthController } from './controller/auth.controller';
 import { UserRoutes } from './route/user.routes';
@@ -40,33 +39,6 @@ class Server {
 
   public config(): void {
     this.app.disable('x-powered-by');
-    /*this.app.use(helmet({
-      contentSecurityPolicy: {
-        directives: {
-          defaultSrc: allowedResourceSources,
-          styleSrc: ["'self'", 'cdn.laji.fi', 'fonts.googleapis.com', "'unsafe-inline'"],
-          fontSrc: ["'self'", 'cdn.laji.fi', 'fonts.gstatic.com', "'sha256-5cD+sF5UmRfpb/CalLmJdYzf23tFwPPfvsRDWZa59xM='", 'data:'],
-          scriptSrc: [
-            "'self'",
-            "'unsafe-eval'",
-            "'sha256-5cD+sF5UmRfpb/CalLmJdYzf23tFwPPfvsRDWZa59xM='",
-            'www.google-analytics.com',
-            'https://cdnjs.cloudflare.com/ajax/libs/openseadragon/2.2.1/openseadragon.min.js',
-            "'unsafe-hashes'",
-            "'sha256-MhtPZXr7+LpJUY5qtMutB+qWfQtMaPccfe7QXtCcEYc='"
-          ]
-        }
-      },
-      featurePolicy: {
-        features: {
-          fullscreen: ["'self'"],
-          vibrate: ["'none'"],
-          payment: ["'none'"],
-          syncXhr: ["'none'"]
-        }
-      },
-      referrerPolicy: {policy: 'same-origin'}
-    }));*/
     this.app.use(compression());
     this.app.use(bodyParser.urlencoded({extended: false}));
     this.app.use(bodyParser.text());
