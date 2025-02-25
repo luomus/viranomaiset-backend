@@ -1,49 +1,42 @@
-import { allowedRoles, userCollectionMap } from '../config.local';
+import { allowedRoles } from '../config.local';
 import { TriplestoreService } from './triplestore.service';
 
-interface IPerson {
+interface IdValuePair {
+  id: string;
+  value: string
+}
+
+export interface VirUser {
   id: string;
   fullName: string;
   emailAddress: string;
-  organisation: string[]
-}
-
-export interface IColOrganization {
-  id: string;
-  collectionName: {
-    fi: string;
-    sv: string;
-    en: string;
-  };
-  person?: IPerson[];
-  children?: IColOrganization[];
+  organisation: IdValuePair[];
+  organisationAdmin: IdValuePair[];
+  section: IdValuePair[];
+  securePortalUserRoleExpires?: string;
 }
 
 const REFRESH_INTERVAL = 3600000; // 1h
 
-const UNDEFINED_COLLECTION = {
-  id: 'undefined',
-  collectionName: {
-    fi: 'Tuntematon',
-    sv: 'Tuntematon',
-    en: 'Tuntematon'
-  }
-};
-
 export class OrganizationService {
 
-  private users = [];
+  private users: VirUser[] = [];
+  private organisations: {[id: string]: string};
+  private sections: {[id: string]: string};
+
+  private organisationsCacheKey: string;
+  private organisationsCacheResponse: string[];
 
   constructor(
     private triplestoreService: TriplestoreService
   ) {
     setTimeout(() => {
-      setInterval(() => this.getAllUsers(), REFRESH_INTERVAL);
-      this.getAllUsers();
+      setInterval(() => this.refreshUsers(), REFRESH_INTERVAL);
+      this.refreshUsers();
     }, 3000)
   }
 
-  public getUsers(includeExpired = false): IColOrganization[] {
+  getUsers(includeExpired = false): VirUser[] {
     if (!includeExpired) {
       return this.users.filter(p => {
         return p.securePortalUserRoleExpires
@@ -54,7 +47,7 @@ export class OrganizationService {
     return this.users;
   }
 
-  public async getUser(id: string): Promise<any> {
+  async getUser(id: string): Promise<VirUser> {
     const p = await this.triplestoreService.search<any>({
       type: 'MA.person',
       subject: id
@@ -62,7 +55,7 @@ export class OrganizationService {
     return this.prepareSinglePerson(p[0], !!"domain only");
   }
 
-  getAllUsers() {
+  refreshUsers(): Promise<void> {
     return this.triplestoreService.search<any>({
       type: 'MA.person', predicate: 'MA.role',
       objectresource: allowedRoles.filter(r => r !== 'MA.admin').join(',')
@@ -82,8 +75,6 @@ export class OrganizationService {
       .catch(e => console.log('User list refresh failed', e));
   }
 
-  private organisationsCacheKey: string;
-  private organisationsCacheResponse: string[];
   private getOrganisationsFromRemote(organisations: Set<string>) {
     const arr = Array.from(organisations.values());
     const query = arr.sort().join(',');
@@ -98,44 +89,6 @@ export class OrganizationService {
       this.organisationsCacheResponse = res;
       return res;
     });
-  }
-
-  organisations: {[id: string]: string};
-  sections: {[id: string]: string};
-
-  private addPersonInfoToCollections(persons: {[colID: string]: IPerson}, collections: any[], level = 0): IColOrganization[] {
-    const result: IColOrganization[] = [];
-    collections.forEach(raw => {
-      if (!raw) {
-        return;
-      }
-      result.push(OrganizationService.rawCollectionToCollection(raw, {
-        person: userCollectionMap[raw.id] ? userCollectionMap[raw.id].map(id => {
-          const person = persons[id];
-          delete persons[id];
-          return person as IPerson;
-        }) : [],
-        children: raw.children ? this.addPersonInfoToCollections(persons, raw.children, level + 1) : []
-      }));
-    });
-
-    if (level !== 0) {
-      return result;
-    }
-
-    const unknown = [];
-    Object.keys(persons).forEach(id => {
-      unknown.push(persons[id]);
-    });
-
-    if (unknown.length > 0) {
-      result.push({
-        ...UNDEFINED_COLLECTION,
-        person: unknown
-      });
-    }
-
-    return result;
   }
 
   private organizationsToLookUp(organizations: any[]): {[id: string]: string} {
@@ -163,7 +116,7 @@ export class OrganizationService {
     return result;
   }
 
-  private prepareSinglePerson(p: any, emailDomainOnly = false) {
+  private prepareSinglePerson(p: any, emailDomainOnly = false): VirUser {
     return {
       id: p.id,
       fullName: p.fullName || (`${p?.givenNames} ${p?.inheritedName}`),
@@ -175,19 +128,16 @@ export class OrganizationService {
     }
   }
 
-  private preparePersons(persons: any[]) {
-    const prepared = persons
+  private preparePersons(persons: any[]): VirUser[] {
+    return persons
       .filter(p => !!p.id)
-      .map(p => {
-        return this.prepareSinglePerson(p);
-    });
-    return prepared;
+      .map(p => (this.prepareSinglePerson(p)));
   }
 
   // Triplestore values aren't formatted properly, so they can be non-arrays
   // if there's only a single value. This function normalizes the value to
   // be always an array.
-  private toArray(val: any) {
+  private toArray(val: any): any[] {
     return !val
       ? []
       : Array.isArray(val)
@@ -195,81 +145,20 @@ export class OrganizationService {
         : [val]
   }
 
-
-  private toIdValuePairs(val: any, nameMap: { [id: string]: string }) {
+  private toIdValuePairs(val: any, nameMap: { [id: string]: string }): IdValuePair[] {
     return this.toArray(val).map(o => ({
       id: o,
       value: this.mapName(o, nameMap)
     }));
   }
 
-  private mapName(org: string, nameMap: { [id: string]: string }) {
+  private mapName(org: string, nameMap: { [id: string]: string }): string {
     return nameMap[org] || `unknown (${org})`;
   }
 
-  private prepareEmailAddress(emailAddress: string, domainOnly = false) {
+  private prepareEmailAddress(emailAddress: string, domainOnly = false): string {
     return domainOnly
       ? `@` + emailAddress?.split('@')?.[1]
       : emailAddress
-
-  }
-
-  private async findSubOrganizations(roots: any, fetched = {}): Promise<IColOrganization[]> {
-    if (!roots) {
-      return [];
-    }
-
-    const collectionMap = await this.triplestoreService.search<any>({
-      type: 'MY.collection',
-      predicate: 'MY.isPartOf',
-      objectresource: roots.map(c => c.id).join(',')
-    }).then(cols => (cols || []).reduce((all, raw) => {
-      const partOf = raw && raw.isPartOf && raw.isPartOf.id || '';
-      if (!partOf) {
-        return;
-      }
-      if (!all[partOf]) {
-        all[partOf] = [];
-      }
-      all[partOf].push(OrganizationService.rawCollectionToCollection(raw));
-      return all;
-    }, {}));
-
-    if (!collectionMap) {
-      return []
-    }
-
-    const newLevel = [];
-    roots.forEach(root => {
-      if (collectionMap[root.id]) {
-        if (!root.children) {
-          root.children = [];
-        }
-        collectionMap[root.id].forEach(col => {
-          if (fetched[col.id]) {
-            return;
-          }
-          fetched[col.id] = true;
-          newLevel.push(col);
-          root.children.push(col);
-        })
-      }
-    });
-    if (newLevel.length > 0) {
-      await this.findSubOrganizations(newLevel, fetched);
-    }
-
-    return roots;
-  }
-
-  private static rawCollectionToCollection(raw: any, override: object = {}) {
-    if (!raw || typeof raw !== 'object') {
-      return undefined;
-    }
-    return {
-      id: raw.id,
-      collectionName: raw.collectionName,
-      ...override
-    }
   }
 }

@@ -3,7 +3,7 @@ import * as httpRequest from 'request';
 import { accessToken, apiUrl, allowedQueryHashes } from '../config.local';
 import { LoggerService } from '../service/logger.service';
 import { sha1 } from 'object-hash';
-import { IColOrganization, OrganizationService } from '../service/organization.service';
+import { VirUser, OrganizationService } from '../service/organization.service';
 import { URL } from 'url';
 import { replacePublicTokenInUrl, replacePublicTokenInBody } from '../utils/person-token-utils';
 
@@ -29,7 +29,7 @@ export class ApiController {
     return res.redirect(302, address);
   }
 
-  public getUsers(req: Request, res: Response): Response<IColOrganization[]> {
+  public getUsers(req: Request, res: Response): Response<VirUser[]> {
     const isInvalidRes = this.userQueryIsInvalid(req, res);
     if (isInvalidRes) {
       return isInvalidRes;
@@ -37,7 +37,7 @@ export class ApiController {
     return res.status(200).send(this.organizationService.getUsers(req.query.includeExpired === 'true'));
   }
 
-  public async getUser(req: Request, res: Response): Promise<Response<IColOrganization[]>> {
+  public async getUser(req: Request, res: Response): Promise<Response<VirUser[]>> {
     const isInvalidRes = this.userQueryIsInvalid(req, res);
     if (isInvalidRes) {
       return isInvalidRes;

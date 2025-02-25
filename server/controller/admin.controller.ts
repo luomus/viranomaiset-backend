@@ -20,7 +20,7 @@ export class AdminController {
     request({uri, method: req.method, qs: {...req.query, personToken: req.user['token']}, headers}).on('response', async (response) => {
       // Flush organization service users so they can be queried with updated data.
       if (response.statusCode >= 200 && response.statusCode < 400) {
-        await this.organizationService.getAllUsers();
+        await this.organizationService.refreshUsers();
       }
       // Make sure that we don't return 403 since that causes a redirect.
       const statusCode = response.statusCode >= 400
