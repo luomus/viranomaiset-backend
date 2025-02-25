@@ -1,21 +1,13 @@
 import { Request, Response } from 'express';
 import * as httpRequest from 'request';
-import { accessToken, apiUrl, allowedQueryHashes } from '../config.local';
+import { accessToken, apiUrl } from '../config.local';
 import { LoggerService } from '../service/logger.service';
-import { sha1 } from 'object-hash';
 import { OrganizationService } from '../service/organization.service';
 import { URL } from 'url';
 import { replacePublicTokenInUrl, replacePublicTokenInBody } from '../utils/person-token-utils';
 
-const LOG_DENIED = 'API_REQUEST_DENIED';
 const LOG_SUCCESS = 'API_REQUEST_SUCCESS';
 const LOG_INVALID_TOKEN = 'API_REQUEST_INVALID_TOKEN';
-
-enum AllowedQuery {
-  no,
-  noGraphQL,
-  yes,
-}
 
 export class ApiController {
 
@@ -61,16 +53,6 @@ export class ApiController {
     });
   }
 
-  private static isAllowedQuery(url: string, body: string): AllowedQuery  {
-    if (typeof url !== 'string') {
-      return AllowedQuery.no;
-    }
-    if (!url.includes('/graphql')) {
-      return AllowedQuery.yes;
-    }
-    return allowedQueryHashes.indexOf(ApiController.getQueryHash(body)) === -1 ? AllowedQuery.noGraphQL : AllowedQuery.yes;
-  }
-
   public pipe(req: Request, res: Response): any {
     const user = ApiController.getUserId(req);
     // convert public query to private
@@ -81,25 +63,7 @@ export class ApiController {
       (req.url.includes('?') ? '&' : '?') + 'personId=' + user;
 
     // change the body to have real token if it's there
-    let body = req.body;
-    const allowed = ApiController.isAllowedQuery(url, body);
-
-    if (allowed !== AllowedQuery.yes) {
-      LoggerService.info({
-        user,
-        action: LOG_DENIED,
-        request: {
-          method: req.method,
-          url,
-          body
-        },
-        hash: ApiController.getQueryHash(body),
-        remote: req.connection.remoteAddress || '',
-      });
-      return res.status(AllowedQuery.noGraphQL ? 406 : 403).send({error: 'query not allowed'});
-    }
-
-    body = replacePublicTokenInBody(body, req.user['publicToken'], req.user['token']);
+    const body = replacePublicTokenInBody(req.body, req.user['publicToken'], req.user['token']);
 
     function doRemoteRequest(user: string, url: string, body, req: Request, res: Response<any>) {
       const start = Date.now();
@@ -144,7 +108,6 @@ export class ApiController {
           response: {
             statusCode: res.statusCode,
           },
-          hash: ApiController.getQueryHash(body),
           took: (Date.now() - start),
           remote: req.connection.remoteAddress || '',
         });
@@ -165,18 +128,6 @@ export class ApiController {
     } else {
       doRemoteRequest(user, url, body, req, res);
     }
-  }
-
-  private static getQueryHash(body: string) {
-    if (typeof body === 'string') {
-      try {
-        const data = JSON.parse(body);
-        return sha1((data || {}).query);
-      } catch (e) {
-        //
-      }
-    }
-    return '';
   }
 
   private static isValidQueryToken(req: Request) {

@@ -9,4 +9,3 @@ export const triplestoreUrl = '';
 export const triplestoreAuth = '';
 export const allowedRoles = [];
 export const allowedLogin = [];
-export const allowedQueryHashes = [];
