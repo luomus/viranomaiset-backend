@@ -7,7 +7,7 @@ export class AuthController {
     if (req.isAuthenticated()) {
       return next();
     }
-    res.sendStatus(403);
+    res.status(403).send('Login Required');
   };
 
   static authenticatedWithRedirect(req: Request, res: Response, next: NextFunction) {
