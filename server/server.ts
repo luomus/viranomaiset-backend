@@ -12,6 +12,7 @@ import { AuthController } from './controller/auth.controller.js';
 import { UserRoutes } from './route/user.routes.js';
 import mustacheExpress from 'mustache-express';
 import { fileURLToPath } from 'url';
+import helmet from 'helmet';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -43,6 +44,10 @@ class Server {
 
   public config(): void {
     this.app.disable('x-powered-by');
+    this.app.use(helmet({
+      contentSecurityPolicy: false,
+      referrerPolicy: {policy: 'same-origin'}
+    }));
     this.app.use(compression());
     this.app.use(bodyParser.urlencoded({extended: false}));
     this.app.use(bodyParser.text());
