@@ -22,12 +22,8 @@ export class AdminController {
       if (response.statusCode >= 200 && response.statusCode < 400) {
         await this.organizationService.refreshUsers();
       }
-      // Make sure that we don't return 403 since that causes a redirect.
-      const statusCode = response.statusCode >= 400
-        ? 400
-        : response.statusCode
 
-      response.pipe(res.status(statusCode));
+      response.pipe(res.status(response.statusCode));
     });
   }
 }
