@@ -1,7 +1,7 @@
 import { NextFunction, Request, Response } from 'express';
-import * as passport from 'passport';
+import passport from 'passport';
 
-import { allowedLogin, lajiAuthUrl, systemId } from '../config.local';
+import { allowedLogin, lajiAuthUrl, systemId } from '../config.local.js';
 
 function getNextFromRequestHost(req: Request) {
   const {host} = req.headers;

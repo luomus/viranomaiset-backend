@@ -1,7 +1,7 @@
 import { Request, ParamsDictionary, Query, Response } from 'express-serve-static-core';
-import * as request from 'request';
-import { lajiAuthUrl } from '../config.local';
-import { OrganizationService } from '../service/organization.service';
+import request from 'request';
+import { lajiAuthUrl } from '../config.local.js';
+import { OrganizationService } from '../service/organization.service.js';
 
 export class AdminController {
 

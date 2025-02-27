@@ -1,16 +1,20 @@
-import * as express from 'express';
-import * as path from 'path';
-import * as compression from 'compression';
-import * as expressSession from 'express-session';
-import * as bodyParser from 'body-parser';
-import * as cookieParser from 'cookie-parser';
-import * as passport from 'passport';
-import { ApiRoutes } from './route/api.routes';
-import { domain, secret } from './config.local';
-import { serverPort } from './config';
-import { AuthController } from './controller/auth.controller';
-import { UserRoutes } from './route/user.routes';
-import * as mustacheExpress from 'mustache-express';
+import express from 'express';
+import path, { dirname } from 'path';
+import compression from 'compression';
+import expressSession from 'express-session';
+import bodyParser from 'body-parser';
+import cookieParser from 'cookie-parser';
+import passport from 'passport';
+import { ApiRoutes } from './route/api.routes.js';
+import { domain, secret } from './config.local.js';
+import { serverPort } from './config.js';
+import { AuthController } from './controller/auth.controller.js';
+import { UserRoutes } from './route/user.routes.js';
+import mustacheExpress from 'mustache-express';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 class Server {
   public app: express.Application;

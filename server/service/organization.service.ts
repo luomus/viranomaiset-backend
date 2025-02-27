@@ -1,5 +1,5 @@
-import { allowedRoles } from '../config.local';
-import { TriplestoreService } from './triplestore.service';
+import { allowedRoles } from '../config.local.js';
+import { TriplestoreService } from './triplestore.service.js';
 
 interface IdValuePair {
   id: string;

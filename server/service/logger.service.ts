@@ -1,5 +1,5 @@
-import * as winston from 'winston';
-import { logPath } from '../config.local';
+import winston from 'winston';
+import { logPath } from '../config.local.js';
 
 let currentDate;
 let logger;

@@ -2,8 +2,9 @@
   "name": "virannomaiset-laji-fi",
   "version": "1.0.0",
   "description": "Private portal for the Finnish authorities",
-  "main": "server/server.js",
+  "exports": "./server/server.js",
   "license": "MIT",
+  "type": "module",
   "scripts": {
     "start": "tsc -p ./server  && concurrently \"tsc -w -p ./server\" \"npm run assets-watch\" \"nodemon dist/server/server.js\"",
     "start:standalone": "PORT=3000 npm run start",
@@ -48,7 +49,7 @@
     "jsonld": "^8.3.3",
     "jsonwebtoken": "^9.0.2",
     "mustache-express": "^1.3.2",
-    "node-fetch": "^2.7.0",
+    "node-fetch": "^3.3.2",
     "node-uuid": "^1.4.8",
     "normalize.css": "^8.0.1",
     "passport": "^0.7.0",
@@ -66,7 +67,6 @@
   "devDependencies": {
     "@eslint/js": "^9.21.0",
     "@types/jsonld": "^1.5.15",
-    "@types/node-fetch": "^2.6.12",
     "@types/rdflib": "^1.2.0",
     "build-asset": "^2.0.6",
     "concurrently": "^9.1.2",
@@ -75,5 +75,8 @@
     "husky": "^9.1.7",
     "nodemon": "^3.1.9",
     "typescript-eslint": "^8.25.0"
+  },
+  "engines": {
+    "node": ">=18"
   }
 }

@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response } from 'express';
-import '../auth/laji-auth';
+import '../auth/laji-auth.js';
 
 export class AuthController {
 

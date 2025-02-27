@@ -1,10 +1,10 @@
-import * as passport from 'passport';
+import passport from 'passport';
 import { Strategy } from 'passport-local';
-import * as httpRequest from 'request';
-import { lajiAuthUrl, systemId, allowedRoles, allowedLogin } from '../config.local';
+import httpRequest from 'request';
+import { lajiAuthUrl, systemId, allowedRoles, allowedLogin } from '../config.local.js';
 import random from 'crypto-random-string';
-import { LoggerService } from '../service/logger.service';
-import { accessToken, apiUrl } from '../config.local';
+import { LoggerService } from '../service/logger.service.js';
+import { accessToken, apiUrl } from '../config.local.js';
 
 // TODO this needs to be moved away from here if serving more than one instance of this backend
 const authorized_users = {};

@@ -1,7 +1,7 @@
-import * as jsonld from 'jsonld';
-import * as rdf from 'rdflib';
+import jsonld from 'jsonld';
+import rdf from 'rdflib';
 import fetch from 'node-fetch';
-import { triplestoreUrl, triplestoreAuth } from '../config.local';
+import { triplestoreUrl, triplestoreAuth } from '../config.local.js';
 
 export interface ITriplestoreSearchQuery {
   type: string;

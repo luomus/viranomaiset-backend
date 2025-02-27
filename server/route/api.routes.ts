@@ -1,9 +1,9 @@
 import { Router } from 'express';
-import * as bodyParser from 'body-parser';
-import { ApiController } from '../controller/api.controller';
-import { AdminController } from '../controller/admin.controller';
-import { OrganizationService } from '../service/organization.service';
-import { TriplestoreService } from '../service/triplestore.service';
+import bodyParser from 'body-parser';
+import { ApiController } from '../controller/api.controller.js';
+import { AdminController } from '../controller/admin.controller.js';
+import { OrganizationService } from '../service/organization.service.js';
+import { TriplestoreService } from '../service/triplestore.service.js';
 
 const jsonParser = bodyParser.text({
   type: ['application/+json', 'application/json', 'text/plain']

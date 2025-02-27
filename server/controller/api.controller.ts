@@ -1,10 +1,10 @@
 import { Request, Response } from 'express';
-import * as httpRequest from 'request';
-import { accessToken, apiUrl } from '../config.local';
-import { LoggerService } from '../service/logger.service';
-import { OrganizationService } from '../service/organization.service';
+import httpRequest from 'request';
+import { accessToken, apiUrl } from '../config.local.js';
+import { LoggerService } from '../service/logger.service.js';
+import { OrganizationService } from '../service/organization.service.js';
 import { URL } from 'url';
-import { replacePublicTokenInUrl, replacePublicTokenInBody } from '../utils/person-token-utils';
+import { replacePublicTokenInUrl, replacePublicTokenInBody } from '../utils/person-token-utils.js';
 
 const LOG_SUCCESS = 'API_REQUEST_SUCCESS';
 const LOG_INVALID_TOKEN = 'API_REQUEST_INVALID_TOKEN';
