@@ -1,6 +1,5 @@
 import { Router } from 'express';
 import * as bodyParser from 'body-parser';
-import { AuthController } from '../controller/auth.controller';
 import { ApiController } from '../controller/api.controller';
 import { AdminController } from '../controller/admin.controller';
 import { OrganizationService } from '../service/organization.service';
@@ -25,10 +24,10 @@ export class ApiRoutes {
   }
 
   routes() {
-    this.router.get('/file-download', AuthController.authenticated, jsonParser, (req, res) => this.apiController.fileDownload(req, res));
-    this.router.get('/authorities', AuthController.authenticated, jsonParser, (req, res) => this.apiController.getUsers(req, res));
-    this.router.get('/authorities/:id', AuthController.authenticated, jsonParser, (req, res) => this.apiController.getUser(req, res));
-    this.router.use('/admin', AuthController.authenticated, jsonParser, (req, res) => this.adminController.proxyToLajiAuth(req, res));
-    this.router.all('*all', AuthController.authenticated, jsonParser, (req, res) => this.apiController.pipe(req, res));
+    this.router.get('/file-download', jsonParser, (req, res) => this.apiController.fileDownload(req, res));
+    this.router.get('/authorities', jsonParser, (req, res) => this.apiController.getUsers(req, res));
+    this.router.get('/authorities/:id', jsonParser, (req, res) => this.apiController.getUser(req, res));
+    this.router.use('/admin', jsonParser, (req, res) => this.adminController.proxyToLajiAuth(req, res));
+    this.router.all('*all', jsonParser, (req, res) => this.apiController.pipe(req, res));
   }
 }

@@ -6,6 +6,7 @@
   "license": "MIT",
   "scripts": {
     "start": "tsc -p ./server  && concurrently \"tsc -w -p ./server\" \"npm run assets-watch\" \"nodemon dist/server/server.js\"",
+    "start:standalone": "PORT=3000 npm run start",
     "build": "npm run assets && tsc -p ./server",
     "assets-watch": "cpx \"./server/**/*.{html,mustache,css}\" \"./dist/server\" -w",
     "assets": "cpx \"./server/**/*.{html,mustache,css}\" \"./dist/server\"",

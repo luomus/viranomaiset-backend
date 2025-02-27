@@ -22,9 +22,9 @@ class Server {
   }
 
   public routes(): void {
-    this.app.use('/api/', new ApiRoutes().router);
+    this.app.use('/api/', AuthController.authenticated, new ApiRoutes().router);
     this.app.use('/user/', new UserRoutes().router);
-    this.app.all('*all', AuthController.authenticatedWithRedirect, function (req, res) {
+    this.app.all('*all', function (req, res) {
       const {host} = req.headers;
       const taskMatch = host?.match(/^\d+/)?.[0];
       res.setHeader('Cache-Control', 'no-store');
@@ -61,7 +61,7 @@ class Server {
     this.app.use(passport.session());
 
     this.app.engine('mustache', mustacheExpress());
-    this.app.set('port', serverPort || process.env.PORT || 4000);
+    this.app.set('port', process.env.PORT || serverPort || 4000);
     this.app.set('view engine', 'mustache');
     this.app.set('views', __dirname + '/views');
     this.app.use(express.static(path.join(__dirname, '/../client'), {index: false}));
