@@ -17,7 +17,7 @@ export class UserController {
 
   public async checkUser(req: Request, res: Response) {
     if (req.isAuthenticated()) {
-      return res.redirect(`/user/login?token=${req.user['publicToken']}&next=${req.query.next || ''}`);
+      return res.redirect(`/user/login?token=${req.user.publicToken}&next=${req.query.next || ''}`);
     }
     const next = getNextFromRequestHost(req) || (req.query.next as string|undefined) || '';
     res.render('user/login', {
@@ -45,7 +45,7 @@ export class UserController {
         if (err) {
           return next(err);
         }
-        res.redirect(`/user/login?token=${req.user['publicToken']}&next=${encodeURIComponent(nextParam)}`);
+        res.redirect(`/user/login?token=${req.user.publicToken}&next=${encodeURIComponent(nextParam)}`);
       });
     })(req, res, next);
   }

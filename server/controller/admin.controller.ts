@@ -17,7 +17,7 @@ export class AdminController {
       ...req.headers,
       'Host': new URL(lajiAuthUrl).hostname
     }
-    request({uri, method: req.method, qs: {...req.query, personToken: req.user['token']}, headers}).on('response', async (response) => {
+    request({uri, method: req.method, qs: {...req.query, personToken: req.user.token}, headers}).on('response', async (response) => {
       // Flush organization service users so they can be queried with updated data.
       if (response.statusCode >= 200 && response.statusCode < 400) {
         await this.organizationService.refreshUsers();

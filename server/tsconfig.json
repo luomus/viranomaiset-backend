@@ -1,6 +1,7 @@
 {
   "compilerOptions": {
     "types": [],
+    "typeRoots": ["@types"],
     "declaration": false,
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,

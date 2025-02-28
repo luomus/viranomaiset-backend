@@ -1,5 +1,6 @@
 import { NextFunction, Request, Response } from 'express';
 import '../auth/laji-auth.js';
+import { ErrorMessageEnum } from '../models/models.js';
 
 export class AuthController {
 
@@ -7,6 +8,6 @@ export class AuthController {
     if (req.isAuthenticated()) {
       return next();
     }
-    res.status(403).send('Login Required');
+    res.status(401).send(ErrorMessageEnum.loginRequired);
   };
 }
