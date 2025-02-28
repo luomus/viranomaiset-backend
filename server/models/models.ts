@@ -1,6 +1,5 @@
 export enum ErrorMessageEnum {
-  loginRequired = 'Login Required',
-  invalidToken = 'Invalid Token',
+  loginRequired = 'Login Required'
 }
 
 export interface User {

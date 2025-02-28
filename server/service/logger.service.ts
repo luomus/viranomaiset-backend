@@ -2,7 +2,6 @@ import winston from 'winston';
 import { logPath } from '../config.local.js';
 
 export const LOG_SUCCESS = 'API_REQUEST_SUCCESS';
-export const LOG_INVALID_TOKEN = 'API_REQUEST_INVALID_TOKEN';
 
 let currentDate;
 let logger;
