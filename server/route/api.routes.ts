@@ -1,14 +1,9 @@
 import { Router } from 'express';
-import bodyParser from 'body-parser';
 import { ApiController } from '../controller/api.controller.js';
 import { AdminController } from '../controller/admin.controller.js';
 import { OrganizationService } from '../service/organization.service.js';
 import { TriplestoreService } from '../service/triplestore.service.js';
 import { OrganizationController } from '../controller/organization.controller.js';
-
-const jsonParser = bodyParser.text({
-  type: ['application/+json', 'application/json', 'text/plain']
-});
 
 const triplestoreService = new TriplestoreService();
 
@@ -26,10 +21,10 @@ export class ApiRoutes {
   }
 
   routes() {
-    this.router.get('/file-download', jsonParser, (req, res) => this.apiController.fileDownload(req, res));
-    this.router.get('/authorities', jsonParser, (req, res) => this.organizationController.getUsers(req, res));
-    this.router.get('/authorities/:id', jsonParser, (req, res) => this.organizationController.getUser(req, res));
-    this.router.use('/admin', jsonParser, (req, res) => this.adminController.proxyToLajiAuth(req, res));
-    this.router.all('*all', jsonParser, (req, res) => this.apiController.pipe(req, res));
+    this.router.get('/file-download', (req, res) => this.apiController.fileDownload(req, res));
+    this.router.get('/authorities', (req, res) => this.organizationController.getUsers(req, res));
+    this.router.get('/authorities/:id', (req, res) => this.organizationController.getUser(req, res));
+    this.router.use('/admin', (req, res) => this.adminController.proxyToLajiAuth(req, res));
+    this.router.all('*other', (req, res) => this.apiController.pipe(req, res));
   }
 }

@@ -29,7 +29,7 @@ class Server {
   public routes(): void {
     this.app.use('/api/', AuthController.authenticated, new ApiRoutes().router);
     this.app.use('/user/', new UserRoutes().router);
-    this.app.all('*all', function (req, res) {
+    this.app.all('*other', function (req, res) {
       const {host} = req.headers;
       const taskMatch = host?.match(/^\d+/)?.[0];
       res.setHeader('Cache-Control', 'no-store');
@@ -51,6 +51,7 @@ class Server {
     this.app.use(compression());
     this.app.use(bodyParser.urlencoded({extended: false}));
     this.app.use(bodyParser.text());
+    this.app.use(bodyParser.json());
     this.app.use(cookieParser());
     this.app.use(expressSession({
       name: 'viran',
