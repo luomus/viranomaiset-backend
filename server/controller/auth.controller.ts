@@ -10,4 +10,11 @@ export class AuthController {
     }
     res.status(401).send(ErrorMessageEnum.loginRequired);
   };
+
+  static authenticatedWithRedirect(req: Request, res: Response, next: NextFunction) {
+    if (req.url.startsWith('/user/login') || req.isAuthenticated()) {
+      return next();
+    }
+    res.redirect(`/user/viranomaiset?next=${encodeURIComponent(req.url)}`);
+  };
 }

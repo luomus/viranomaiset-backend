@@ -21,7 +21,7 @@ const __dirname = dirname(__filename);
 function setRoutes(app: Application): void {
   app.use('/api/', AuthController.authenticated, new ApiRoutes().router);
   app.use('/user/', new UserRoutes().router);
-  app.all('*other', function (req, res) {
+  app.all('*other', AuthController.authenticatedWithRedirect, function (req, res) {
     const {host} = req.headers;
     const taskMatch = host?.match(/^\d+/)?.[0];
     res.setHeader('Cache-Control', 'no-store');
