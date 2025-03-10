@@ -1,5 +1,7 @@
-import * as winston from 'winston';
-import { logPath } from '../config.local';
+import winston from 'winston';
+import { logPath } from '../config.local.js';
+
+export const LOG_SUCCESS = 'API_REQUEST_SUCCESS';
 
 let currentDate;
 let logger;

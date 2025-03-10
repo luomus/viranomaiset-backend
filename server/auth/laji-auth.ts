@@ -1,10 +1,11 @@
-import * as passport from 'passport';
+import passport from 'passport';
 import { Strategy } from 'passport-local';
-import * as httpRequest from 'request';
-import { lajiAuthUrl, systemId, allowedRoles, allowedLogin } from '../config.local';
-import * as random from 'crypto-random-string';
-import { LoggerService } from '../service/logger.service';
-import { accessToken, apiUrl, allowedQueryHashes } from '../config.local';
+import { lajiAuthUrl, systemId, allowedRoles, allowedLogin } from '../config.local.js';
+import random from 'crypto-random-string';
+import { LoggerService } from '../service/logger.service.js';
+import { accessToken, apiUrl } from '../config.local.js';
+import { User } from '../models/models.js';
+import axios, { AxiosResponse } from 'axios';
 
 // TODO this needs to be moved away from here if serving more than one instance of this backend
 const authorized_users = {};
@@ -16,42 +17,44 @@ passport.use('local', new Strategy(
   },
   function(token, password, done) {
     const tokenUrl = lajiAuthUrl + 'token/' + token;
-    httpRequest(tokenUrl, function(error, response, body) {
-      if (error) {
-        return done(null, false, { message: 'Incorrect credentials' });
-      }
-      const authResult: any = JSON.parse(body) || {};
-      const userRoles = authResult.user?.roles || [];
-      const hasRightRole  = allowedRoles.some(allowedRole => userRoles.includes(allowedRole));
-      const hasRightMethod = allowedLogin.some(allowed => authResult.source === allowed.method);
 
-      if (response.statusCode != 200 || authResult.target !== systemId || !hasRightRole || !hasRightMethod) {
-        return done(null, false, { message: 'Incorrect credentials' });
-      }
+    axios.get(tokenUrl)
+      .then((response: AxiosResponse) => {
+        const authResult: any = response.data || {};
+        const userRoles = authResult.user?.roles || [];
+        const hasRightRole  = allowedRoles.some(allowedRole => userRoles.includes(allowedRole));
+        const hasRightMethod = allowedLogin.some(allowed => authResult.source === allowed.method);
 
-      const apiPersonUrl = `${apiUrl}/person/${token}?access_token=${accessToken}`;
-      httpRequest(apiPersonUrl, function(error, response, body) {
-        if (error) {
-          return done(null, false, { message: 'Couldn\'t fetch user details for auth' });
-        }
-        const apiResult: any = JSON.parse(body) || {};
-        const isExpired = apiResult.securePortalUserRoleExpires && new Date(apiResult.securePortalUserRoleExpires) <= new Date();
-        if (isExpired) {
-          return done(null, false, { message: 'Access expired' });
+        if (response.status != 200 || authResult.target !== systemId || !hasRightRole || !hasRightMethod) {
+          return done(null, false, { message: 'Incorrect credentials' });
         }
 
-        const user = {
-          ...apiResult,
-          token,
-          publicToken: random({length: 64})
-        };
-        LoggerService.info({
-          user: user['id'],
-          action: 'LOGIN'
-        });
-        return done(null, user);
+        const apiPersonUrl = `${apiUrl}/person/${token}?access_token=${accessToken}`;
+        axios.get(apiPersonUrl)
+          .then((response: AxiosResponse) => {
+            const apiResult: any = response.data || {};
+            const isExpired = apiResult.securePortalUserRoleExpires && new Date(apiResult.securePortalUserRoleExpires) <= new Date();
+            if (isExpired) {
+              return done(null, false, { message: 'Access expired' });
+            }
+
+            const user: User = {
+              ...apiResult,
+              token,
+              publicToken: random({length: 64})
+            };
+            LoggerService.info({
+              user: user.id,
+              action: 'LOGIN'
+            });
+            return done(null, user);
+          })
+          .catch(() => {
+            return done(null, false, { message: 'Couldn\'t fetch user details for auth' });
+          })
+      }).catch(() => {
+        return done(null, false, { message: 'Incorrect credentials' });
       });
-    });
   }
 ));
 
