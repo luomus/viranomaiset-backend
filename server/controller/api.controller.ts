@@ -27,37 +27,39 @@ export class ApiController {
   }
 
   public pipe(req: Request, res: Response) {
+    const userId = req.user.id;
+
     req.url = replacePublicToken(req.url, req.user.publicToken, req.user.token)
       .replace('/query/', '/private-query/')
       .replace('downloadType=LIGHTWEIGHT', 'downloadType=AUTHORITIES_LIGHTWEIGHT')
       .replace('downloadType=CITABLE', 'downloadType=AUTHORITIES_FULL') +
-      (req.url.includes('?') ? '&' : '?') + 'personId=' + req.user.id;
+      (req.url.includes('?') ? '&' : '?') + 'personId=' + userId;
 
     req.body = replacePublicTokenInBody(req.body, req.user.publicToken, req.user.token);
 
     if (req.url.indexOf('/person-token/') === 0 && req.method === 'DELETE') {
       req.logout(() => {
         req.session.destroy(() => {
-          this.doRemoteRequest(req, res);
+          this.doRemoteRequest(req, res, userId);
         });
         LoggerService.info({
-          user: req.user.id,
+          user: userId,
           action: 'LOGOUT'
         });
       });
     } else {
-      this.doRemoteRequest(req, res);
+      this.doRemoteRequest(req, res, userId);
     }
   }
 
-  private doRemoteRequest(req: Request, res: Response<any>) {
+  private doRemoteRequest(req: Request, res: Response<any>, userId: string) {
     const start = Date.now();
 
     void this.apiProxy(req, res);
 
     res.on('finish', function () {
       LoggerService.info({
-        user: req.user.id,
+        user: userId,
         action: LOG_SUCCESS,
         request: {
           method: req.method,
