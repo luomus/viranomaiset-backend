@@ -1,17 +1,16 @@
 {
   "compilerOptions": {
+    "types": [],
+    "typeRoots": ["@types"],
     "declaration": false,
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
     "lib": ["es6", "dom"],
     "mapRoot": "../dist/server",
-    "module": "commonjs",
-    "moduleResolution": "node",
+    "module": "node16",
+    "moduleResolution": "node16",
     "outDir": "../dist/server",
     "sourceMap": true,
-    "target": "es6",
-    "typeRoots": [
-      "../node_modules/@types"
-    ]
+    "target": "es6"
   }
 }

@@ -1,7 +1,7 @@
-import * as jsonld from 'jsonld';
-import * as rdf from 'rdflib';
-import fetch from 'node-fetch';
-import { triplestoreUrl, triplestoreAuth } from '../config.local';
+import jsonld from 'jsonld';
+import rdf from 'rdflib';
+import axios from 'axios';
+import { triplestoreUrl, triplestoreAuth } from '../config.local.js';
 
 export interface ITriplestoreSearchQuery {
   type: string;
@@ -18,14 +18,14 @@ export interface ITriplestoreSearchQuery {
 export class TriplestoreService {
 
   search<T>(query: ITriplestoreSearchQuery): Promise<T[]> {
-    return fetch(triplestoreUrl + '/search?' + this.getQuery(query), {
+    return axios.get(triplestoreUrl + '/search?' + this.getQuery(query), {
       headers: {
         'Authorization': triplestoreAuth
       }
     })
-      .then((res) => res.text())
+      .then((res) => res.data)
       .then(rdf => this.rdfToJsonLd(rdf))
-      .then(json => jsonld.compact(json, TriplestoreService.getContext(query)))
+      .then(json => jsonld.compact(json, TriplestoreService.getContext(query) as any))
       .then(data => TriplestoreService.findDataArray(data))
       .then(data => this.convertToSort(data) as T[])
   }
