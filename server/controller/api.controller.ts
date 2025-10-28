@@ -37,6 +37,10 @@ export class ApiController {
 
     req.body = replacePublicTokenInBody(req.body, req.user.publicToken, req.user.token);
 
+    if (req.headers['person-token'] === req.user.publicToken) {
+      req.headers['person-token'] = req.user.token;
+    }
+
     if (req.url.indexOf('/person-token/') === 0 && req.method === 'DELETE') {
       req.logout(() => {
         req.session.destroy(() => {
