@@ -41,7 +41,7 @@ export class ApiController {
       req.headers['person-token'] = req.user.token;
     }
 
-    if (req.url.indexOf('/person-token/') === 0 && req.method === 'DELETE') {
+    if (req.url.indexOf('/authentication-event') === 0 && req.method === 'DELETE') {
       req.logout(() => {
         req.session.destroy(() => {
           this.doRemoteRequest(req, res, userId);
