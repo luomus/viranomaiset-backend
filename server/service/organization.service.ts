@@ -58,11 +58,12 @@ export class OrganizationService {
   refreshUsers(): Promise<void> {
     return this.triplestoreService.search<any>({
       type: 'MA.person', predicate: 'MA.role',
-      objectresource: allowedRoles.filter(r => r !== 'MA.admin').join(',')
+      objectresource: allowedRoles.filter(r => r !== 'MA.admin').join(','),
+      limit: '999999999'
     })
       .then(persons => {
         const organizations = new Set<string>();
-        persons.forEach(p => Array.isArray(p.organisation) ? p.organisation.forEach(o => organizations.add(o)) : organizations.add(p.organisation))
+        persons.forEach(p => Array.isArray(p.organisation) ? p.organisation.forEach(o => organizations.add(o)) : organizations.add(p.organisation));
         return this.getOrganisationsFromRemote(organizations).then(organizations => {
           this.organisations = this.organizationsToLookUp(organizations);
           this.sections = this.sectionsToLookUp(organizations);
