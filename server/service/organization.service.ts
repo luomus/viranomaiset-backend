@@ -85,7 +85,8 @@ export class OrganizationService {
     this.organisationsCacheKey = query;
     return this.triplestoreService.search<any>({
       type: 'MOS.organization',
-      subject: query
+      subject: query,
+      limit: '999999999'
     }).then(res => {
       this.organisationsCacheResponse = res;
       return res;
